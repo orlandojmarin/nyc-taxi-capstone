@@ -151,6 +151,25 @@ Tableau / Looker + Streamlit (stretch goal)
 - [ ] Warehouse size and auto-suspend settings
 - [ ] What we cut if behind schedule
 
+## Daily Progress
+
+### Monday (Aug 10) - DONE
+- [x] Created GitHub repo with branches (main, develop, orlando, ariana, maryam)
+- [x] Bronze layer complete: 38,759,706 yellow + 465,029 green + 265 zones + 7,248 weather
+- [x] Weather enrichment via Open-Meteo API, loaded directly via Python connector
+- [x] Architecture diagrams updated (Pattern A includes weather)
+- [x] Silver plan and Gold plan docs created
+- [x] Collaborators added (Maryam accepted, Ariana invitation pending)
+- Note: Column names from INFER_SCHEMA are case-sensitive (must use double quotes)
+
+### Tuesday (Aug 11) - PLAN
+- [ ] Complete Silver layer (run 04_silver_transform.sql, fix any column name issues)
+- [ ] Team decision: Pattern A or B (ideally by noon)
+- [ ] Decide analytical question (shapes the entire Gold layer)
+- [ ] Document all decisions in team charter/decision log
+- [ ] Complete Gold layer with dbt (setup, staging models, mart models, tests)
+- [ ] Begin Streamlit app and/or orchestration script (stretch, if time permits)
+
 ## Cut Order (if behind)
 
 1. AI enrichment / BigQuery ML
