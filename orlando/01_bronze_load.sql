@@ -165,17 +165,18 @@ UNION ALL
 SELECT 'zone_lookup', COUNT(*) FROM zone_lookup;
 
 -- Quick sanity checks on yellow
+-- Column names are lowercase because INFER_SCHEMA preserves Parquet case
 SELECT
-    MIN(tpep_pickup_datetime) AS earliest_pickup,
-    MAX(tpep_pickup_datetime) AS latest_pickup,
-    COUNT(DISTINCT YEAR(tpep_pickup_datetime)) AS distinct_years
+    MIN("tpep_pickup_datetime") AS earliest_pickup,
+    MAX("tpep_pickup_datetime") AS latest_pickup,
+    COUNT(DISTINCT YEAR("tpep_pickup_datetime")) AS distinct_years
 FROM yellow_raw;
 
 -- Quick sanity checks on green
 SELECT
-    MIN(lpep_pickup_datetime) AS earliest_pickup,
-    MAX(lpep_pickup_datetime) AS latest_pickup,
-    COUNT(DISTINCT YEAR(lpep_pickup_datetime)) AS distinct_years
+    MIN("lpep_pickup_datetime") AS earliest_pickup,
+    MAX("lpep_pickup_datetime") AS latest_pickup,
+    COUNT(DISTINCT YEAR("lpep_pickup_datetime")) AS distinct_years
 FROM green_raw;
 
 -- Zone lookup check
