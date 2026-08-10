@@ -27,7 +27,7 @@ This covers everything that happens between Bronze (raw) and Silver (clean, conf
 - `pickup_hour` = HOUR(pickup_at)
 - `is_night` = TRUE if pickup between 8pm and 6am
 - `is_weekend` = TRUE if Saturday or Sunday
-- `is_rush_hour` = TRUE if weekday AND (7-9am or 4-7pm)
+- `is_rush_hour` = TRUE if weekday AND (7-8am or 5-6pm)
 
 ## Part 3: Supporting Tables
 

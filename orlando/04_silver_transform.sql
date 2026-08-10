@@ -98,7 +98,7 @@ SELECT
     CASE WHEN DAYOFWEEK(pickup_at) IN (0, 6) THEN TRUE ELSE FALSE END AS is_weekend,
     CASE
         WHEN DAYOFWEEK(pickup_at) NOT IN (0, 6)
-         AND (HOUR(pickup_at) BETWEEN 7 AND 9 OR HOUR(pickup_at) BETWEEN 16 AND 19)
+         AND (HOUR(pickup_at) BETWEEN 7 AND 8 OR HOUR(pickup_at) BETWEEN 17 AND 18)
         THEN TRUE ELSE FALSE
     END AS is_rush_hour
 FROM combined;
