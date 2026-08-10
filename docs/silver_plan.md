@@ -1,4 +1,6 @@
-# Data Cleaning Plan (Bronze → Silver)
+# Silver Layer Plan (Bronze → Silver)
+
+This covers everything that happens between Bronze (raw) and Silver (clean, conformed, ready for analysis). Silver has four parts: conforming, deriving, cleaning, and enrichment.
 
 ## General Approach
 
@@ -8,7 +10,38 @@
 
 ---
 
-## stg_trips (yellow_raw + green_raw)
+## Part 1: Conforming (make the data consistent)
+
+- **Union yellow + green** into one `stg_trips` table
+- **Rename columns** to common names: `tpep_pickup_datetime` / `lpep_pickup_datetime` → `pickup_at`
+- **Add `taxi_type` column** ('yellow' or 'green') so we know which fleet each row came from
+- **Handle schema differences:** Green has `ehail_fee` and `trip_type` (Yellow gets NULLs); Yellow has `airport_fee` (Green gets NULL)
+- **Standardize case:** all column names lowercase/snake_case in Silver
+
+## Part 2: Derived Columns (compute useful fields)
+
+- `trip_duration_minutes` = DATEDIFF(minute, pickup_at, dropoff_at)
+- `pickup_year` = YEAR(pickup_at)
+- `pickup_month` = MONTH(pickup_at)
+- `pickup_dayofweek` = DAYOFWEEK(pickup_at)
+- `pickup_hour` = HOUR(pickup_at)
+
+## Part 3: Supporting Tables
+
+- **stg_zones:** clean copy of zone_lookup with renamed columns (location_id, borough, zone_name, service_zone)
+- **stg_weather:** adds `weather_date`, `weather_hour`, `weather_category`, `is_adverse_weather` from Bronze weather_hourly
+
+## Part 4: dbt (where it comes in)
+
+- The manual SQL in `04_silver_transform.sql` is a prototype. Once validated, port it into dbt staging models.
+- dbt adds: automated testing (not_null, unique, accepted_values, relationships), documentation, lineage graphs, and repeatable runs.
+- dbt staging models = Silver layer. dbt mart models = Gold layer.
+
+---
+
+## Part 5: Data Cleaning (flag bad records)
+
+### stg_trips (yellow_raw + green_raw)
 
 ### Timestamps
 
