@@ -1,0 +1,161 @@
+# Capstone Project Context
+
+## Team
+
+- **Team Name:** Team Fuchsia
+- **Members:** Orlando Marin, Ariana Lopez, Maryam Choudhury
+- **Sprint:** Monday August 10 to Friday August 14, 2026
+- **Demo Day:** Wednesday August 19, 2026 (20 minutes + 5 minutes Q&A)
+
+## Project Summary
+
+We are a three-person data consultancy building a working data platform on top of 2.5 years of NYC taxi trip records (Yellow and Green, Jan-May 2025 and Jan-May 2026) from a raw S3 bucket. We choose the analytical question, choose the architecture, and defend both.
+
+## Data Source
+
+- **Bucket:** `s3://techcatalyst-de-2026/raw/`
+- **Yellow taxi:** 10 files (Jan-May 2025, Jan-May 2026), ~33 million rows, ~600 MB Parquet
+- **Green taxi:** 10 files (same months), ~600K rows, ~16 MB Parquet
+- **Taxi zone lookup:** `taxi_zone_lookup.csv` (265 zones)
+- **Weather enrichment:** Open-Meteo Historical Weather API (hourly, NYC Central Park, 7,248 rows)
+- **Total:** 20 trip files, 30+ million rows + weather enrichment
+
+## Architecture Decision: Pattern A (ELT, Warehouse-Centric)
+
+```
+S3 RAW (parquet)
+   |  external stage + COPY INTO
+   v
+Snowflake BRONZE (yellow_raw, green_raw, zone_lookup, weather_hourly)
+   |  dbt / SQL
+   v
+Snowflake SILVER (stg_trips, stg_zones, stg_weather)
+   |  dbt
+   v
+Snowflake GOLD (marts serving analytical question)
+   |
+   v
+Tableau / Looker + Streamlit (stretch goal)
+```
+
+**Why Pattern A:** Fewest moving parts, most reliable path for a one-week sprint. Team is strongest in SQL. All transformation is tested and version-controlled through dbt.
+
+## Pipeline Files (orlando branch)
+
+| File | Purpose |
+| :--- | :--- |
+| `orlando/01_bronze_load.sql` | S3 external stage + COPY INTO for taxi and zone data |
+| `orlando/03_fetch_weather.py` | Fetches Open-Meteo API and loads directly into Snowflake Bronze |
+| `orlando/02_silver_transform.sql` | All Bronze to Silver transforms (trips, zones, weather) |
+| `orlando/snowflake_connect.py` | Python connection helper (reads snow.cfg) |
+| `orlando/snow.cfg` | Snowflake credentials (gitignored, never committed) |
+
+**Run order:**
+1. `01_bronze_load.sql` in Snowflake worksheet
+2. `python orlando/03_fetch_weather.py` from terminal
+3. `02_silver_transform.sql` in Snowflake worksheet
+
+## Stretch Goals
+
+| Goal | Priority | Status |
+| :--- | :--- | :--- |
+| Orchestration (single idempotent Python script) | High | Planned |
+| Streamlit dashboard | Medium | Planned |
+| BigQuery ML (forecast or clustering) | Low | Planned if time permits |
+
+## Required Deliverables
+
+1. Working pipeline from S3 RAW to Snowflake gold models
+2. dbt Core project with staging models, mart models, and tests
+3. Data Quality Incident Report
+4. At least one defended 2025 vs 2026 year-over-year finding
+5. Dashboard in Tableau or Looker
+6. Architecture diagram of what was actually built
+7. Cost and performance rationale
+8. GitHub repository with README that lets someone re-run the work
+9. AI use disclosure
+10. Future state proposal with effort estimate
+11. Demo Day presentation (every member speaking)
+12. (Optional) Streamlit app, Databricks lane, BigQuery destination, AI enrichment
+
+## Grading Rubric (100 points)
+
+| Area | Weight |
+| :--- | :--- |
+| Pipeline: completeness, reliability, reproducibility | 25 |
+| Data quality investigation and remediation | 15 |
+| Modeling and analytics engineering | 15 |
+| Analytical insight and year-over-year finding | 15 |
+| Business intelligence delivery | 10 |
+| Presentation, storytelling, and defense | 20 |
+
+## Key Data Traps to Address
+
+- **Cash tip trap:** `tip_amount` only populated for credit card; cash tips show as $0.00
+- **Timestamps outside file's month:** Some records have pickup dates in wrong months/years
+- **Impossible values:** Negative fares, zero-distance trips, passenger_count of 0, dropoff before pickup
+- **Duplicates:** No natural primary key; must define what constitutes a duplicate
+- **Schema differences:** Yellow uses `tpep_*` timestamps, Green uses `lpep_*`; Green has `ehail_fee` and `trip_type`, no `airport_fee`
+- **2025 schema change:** `cbd_congestion_fee` column added starting Jan 2025
+
+## Presentation Structure (20 min)
+
+| Section | Time | Purpose |
+| :--- | :--- | :--- |
+| Problem and question | 2-3 min | What we set out to answer and why |
+| Data and approach | 3-4 min | What we were given, data shape, architecture |
+| Data quality | 2-3 min | What was wrong and what we did |
+| Findings | 5-6 min | Year-over-year result with dashboard |
+| Technical deep dive | 3-4 min | Design decisions, trade-offs, cost |
+| Future state | 1-2 min | What we would build next |
+| Recommendation | 1 min | What the client should do |
+
+## Sprint Milestones
+
+| Day | Focus | Checkpoint |
+| :--- | :--- | :--- |
+| Monday (Aug 10) | Charter, question, architecture, first data landing | One raw file in Snowflake + question in README |
+| Tuesday (Aug 11) | Ingest all 20 files, union Yellow/Green, begin DQ report | All files loaded, unioned, row count reconciled |
+| Wednesday (Aug 12) | dbt project, staging/mart models, tests, Architecture Defense | Architecture Defense (10 min + questions) |
+| Thursday (Aug 13) | Gold models, dashboard, DQ report, cost rationale, diagrams | Dashboard connected showing real data |
+| Friday (Aug 14) | Deliver everything, freeze pipeline, first rehearsal | All deliverables committed, pipeline runs clean |
+
+## Snowflake Configuration
+
+- **Account:** FFOJZFH-WPA36811
+- **Database:** TECHCATALYST
+- **Schemas:** BRONZE, SILVER (staging), GOLD (marts)
+- **Role:** DE
+- **Warehouse:** COMPUTE_WH
+- **Credentials:** `snow.cfg` file (never commit)
+- **Storage integration:** `s3_int` (pre-configured by instructor)
+- **Loading:** External stage + COPY INTO with MATCH_BY_COLUMN_NAME
+
+## GitHub Repository
+
+- **URL:** https://github.com/orlandojmarin/nyc-taxi-capstone
+- **Branch strategy:** main, develop, orlando, ariana, maryam
+- Every team member commits code
+- Decision log kept current in Team Charter
+
+## Decisions to Record (for Architecture Defense and Demo Day)
+
+- [x] Architecture pattern chosen: Pattern A (ELT, warehouse-centric)
+- [x] Weather enrichment approach: Open-Meteo API loaded via Python connector
+- [ ] Analytical question chosen:
+- [ ] How we handled each data defect
+- [ ] Why models are tables vs views
+- [ ] Warehouse size and auto-suspend settings
+- [ ] What we cut if behind schedule
+
+## Cut Order (if behind)
+
+1. AI enrichment / BigQuery ML
+2. Databricks lane
+3. BigQuery second destination
+4. Streamlit app
+5. Additional enrichment datasets
+6. Extra dbt models beyond what question needs
+7. Narrow the analytical question itself
+
+Never cut: pipeline, dbt models, data quality report, dashboard, or rehearsal.
