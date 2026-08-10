@@ -14,11 +14,11 @@ We are a three-person data consultancy building a working data platform on top o
 ## Data Source
 
 - **Bucket:** `s3://techcatalyst-de-2026/raw/`
-- **Yellow taxi:** 10 files (Jan-May 2025, Jan-May 2026), ~33 million rows, ~600 MB Parquet
-- **Green taxi:** 10 files (same months), ~600K rows, ~16 MB Parquet
+- **Yellow taxi:** 10+ files (Jan-May 2025, Jan-May 2026), 38,759,706 rows, Parquet
+- **Green taxi:** 10+ files (same months), 465,029 rows, Parquet
 - **Taxi zone lookup:** `taxi_zone_lookup.csv` (265 zones)
 - **Weather enrichment:** Open-Meteo Historical Weather API (hourly, NYC Central Park, 7,248 rows)
-- **Total:** 20 trip files, 30+ million rows + weather enrichment
+- **Total:** 39,224,735 trip rows + 265 zones + 7,248 weather hours
 
 ## Architecture Decision: Pattern A (ELT, Warehouse-Centric)
 
@@ -45,15 +45,17 @@ Tableau / Looker + Streamlit (stretch goal)
 | File | Purpose |
 | :--- | :--- |
 | `orlando/01_bronze_load.sql` | S3 external stage + COPY INTO for taxi and zone data |
-| `orlando/03_fetch_weather.py` | Fetches Open-Meteo API and loads directly into Snowflake Bronze |
-| `orlando/02_silver_transform.sql` | All Bronze to Silver transforms (trips, zones, weather) |
+| `orlando/02_fetch_weather.py` | Fetches Open-Meteo API and loads directly into Snowflake Bronze |
+| `orlando/03_bronze_verify.sql` | Verifies all Bronze tables loaded correctly |
+| `orlando/04_silver_transform.sql` | All Bronze to Silver transforms (trips, zones, weather) |
 | `orlando/snowflake_connect.py` | Python connection helper (reads snow.cfg) |
 | `orlando/snow.cfg` | Snowflake credentials (gitignored, never committed) |
 
 **Run order:**
 1. `01_bronze_load.sql` in Snowflake worksheet
-2. `python orlando/03_fetch_weather.py` from terminal
-3. `02_silver_transform.sql` in Snowflake worksheet
+2. `python orlando/02_fetch_weather.py` from terminal
+3. `03_bronze_verify.sql` in Snowflake worksheet (confirm all 4 tables)
+4. `04_silver_transform.sql` in Snowflake worksheet
 
 ## Stretch Goals
 
@@ -142,6 +144,7 @@ Tableau / Looker + Streamlit (stretch goal)
 
 - [x] Architecture pattern chosen: Pattern A (ELT, warehouse-centric)
 - [x] Weather enrichment approach: Open-Meteo API loaded via Python connector
+- [x] Bronze layer complete (Aug 10): 38.8M yellow, 465K green, 265 zones, 7,248 weather hours
 - [ ] Analytical question chosen:
 - [ ] How we handled each data defect
 - [ ] Why models are tables vs views

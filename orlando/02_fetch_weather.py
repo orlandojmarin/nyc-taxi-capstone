@@ -126,7 +126,7 @@ def fetch_all_weather():
         time.sleep(0.5)
 
     df = pd.DataFrame(all_rows)
-    df["DATETIME_LOCAL"] = pd.to_datetime(df["DATETIME_LOCAL"])
+    df["DATETIME_LOCAL"] = pd.to_datetime(df["DATETIME_LOCAL"]).dt.strftime("%Y-%m-%d %H:%M:%S")
     return df
 
 
@@ -141,11 +141,27 @@ def load_to_snowflake(df):
         run_sql("CREATE SCHEMA IF NOT EXISTS TECHCATALYST.BRONZE", conn)
         run_sql("USE SCHEMA BRONZE", conn)
 
-        # Drop and recreate to ensure idempotency
-        run_sql("DROP TABLE IF EXISTS WEATHER_HOURLY", conn)
+        # Create table with explicit types to ensure DATETIME_LOCAL is a timestamp
+        run_sql("""
+            CREATE OR REPLACE TABLE WEATHER_HOURLY (
+                DATETIME_LOCAL          TIMESTAMP_NTZ,
+                TEMPERATURE_F           FLOAT,
+                APPARENT_TEMPERATURE_F  FLOAT,
+                PRECIPITATION_INCH      FLOAT,
+                RAIN_INCH               FLOAT,
+                SNOWFALL_INCH           FLOAT,
+                SNOW_DEPTH_INCH         FLOAT,
+                WEATHER_CODE            INT,
+                WEATHER_DESCRIPTION     VARCHAR,
+                WIND_SPEED_MPH          FLOAT,
+                WIND_GUSTS_MPH          FLOAT,
+                RELATIVE_HUMIDITY_PCT   INT,
+                VISIBILITY_FT           FLOAT
+            )
+        """, conn)
 
-        # Load using write_pandas (handles table creation automatically)
-        load_dataframe(df, "WEATHER_HOURLY", overwrite=True, create=True, conn=conn)
+        # Load into existing table (create=False since we just created it)
+        load_dataframe(df, "WEATHER_HOURLY", overwrite=False, create=False, conn=conn)
 
         # Verify
         result = run_sql("SELECT COUNT(*) FROM WEATHER_HOURLY", conn)
