@@ -1,0 +1,29 @@
+# Credentials
+snow.cfg
+*.cfg
+.env
+*.key
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# dbt
+target/
+dbt_packages/
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Data files (too large for git)
+*.parquet
+*.csv
+!seeds/*.csv
