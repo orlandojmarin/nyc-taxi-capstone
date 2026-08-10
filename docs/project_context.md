@@ -2,7 +2,7 @@
 
 ## Team
 
-- **Team Name:** Team Fuchsia
+- **Team Name:** Team AMO
 - **Members:** Orlando Marin, Ariana Lopez, Maryam Choudhury
 - **Sprint:** Monday August 10 to Friday August 14, 2026
 - **Demo Day:** Wednesday August 19, 2026 (20 minutes + 5 minutes Q&A)
