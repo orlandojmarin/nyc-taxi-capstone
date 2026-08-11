@@ -168,8 +168,8 @@ This single script executes all steps in order: Bronze infrastructure, data load
 - [x] Silver layer complete (Aug 11): dbt project with stg_trips (39.2M rows), stg_zones (265), stg_weather (7,248). DQ flags added. 16 tests (15 pass, 1 warn on payment_type).
 - [x] Why models are tables vs views: staging models are tables (39M rows, too expensive to rebuild on every query as views; dashboard and Gold models read Silver repeatedly)
 - [x] Analytical question chosen: "How does adverse weather affect taxi demand across NYC boroughs, and how did those patterns shift between 2025 and 2026?"
-- [x] Gold layer complete (Aug 11): fct_trips (38M rows), mart_weather_demand (42,582 rows), dim_zones (265), dim_weather (7,248). 16 Gold tests passing.
-- [ ] How we handled each data defect
+- [x] Gold layer complete (Aug 11): fct_trips (38M rows), mart_weather_demand (34,719 rows), dim_zones (265), dim_weather (7,248). 16 Gold tests passing.
+- [x] How we handled each data defect (Data Quality Incident Report complete, Aug 11)
 - [ ] Warehouse size and auto-suspend settings
 - [ ] What we cut if behind schedule
 
@@ -193,10 +193,13 @@ This single script executes all steps in order: Bronze infrastructure, data load
 - [x] Gold layer complete: fct_trips (38,053,445 rows), mart_weather_demand (34,719), dim_zones (265), dim_weather (7,248)
 - [x] Gold tests all passing (16/16)
 - [x] dbt docs regenerated with full Bronze-Silver-Gold lineage
-- [ ] Team decision: Pattern A or B (ideally by noon)
+- [x] Orchestration script built and tested (orchestrate.py, 6.1 min end-to-end)
+- [x] Data Quality Incident Report written (8 defects documented, including 2 not in catalog)
+- [x] Tableau connection guide created for team
+- [ ] Team decision: Pattern A or B
 - [ ] Document all decisions in team charter/decision log
 - [ ] Connect Tableau/Looker to AMO_GOLD.MART_WEATHER_DEMAND
-- [ ] Begin Streamlit app and/or orchestration script (stretch, if time permits)
+- [ ] Streamlit app (stretch goal)
 
 ## Cut Order (if behind)
 
