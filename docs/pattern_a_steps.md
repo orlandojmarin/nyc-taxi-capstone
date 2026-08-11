@@ -261,7 +261,7 @@ python pipeline/orchestrate.py
 
 ## What's Next
 
-- Connect Tableau to AMO_GOLD.MART_WEATHER_DEMAND (34K rows, instant queries)
+- Connect Tableau to AMO_GOLD.MART_WEATHER_DEMAND (34K rows, instant queries). See [Tableau Connection Guide](tableau_connection_guide.md)
 - Build Streamlit app with interactive borough/weather/year filters
 - Presentation preparation
 
@@ -270,3 +270,4 @@ python pipeline/orchestrate.py
 ## Related Documents
 
 - [Data Quality Incident Report](data_quality_report.md)
+- [Tableau Connection Guide](tableau_connection_guide.md)
