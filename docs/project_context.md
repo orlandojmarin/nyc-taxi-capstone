@@ -39,7 +39,7 @@ Snowflake AMO_SILVER (stg_trips, stg_zones, stg_weather)
 Snowflake AMO_GOLD (marts serving analytical question)
    |
    v
-Tableau / Looker + Streamlit (stretch goal)
+Tableau + Streamlit (stretch goal)
 ```
 
 **Why Pattern A:** Fewest moving parts, most reliable path for a one-week sprint. Team is strongest in SQL. All transformation is tested and version-controlled through dbt.
@@ -198,7 +198,7 @@ This single script executes all steps in order: Bronze infrastructure, data load
 - [x] Tableau connection guide created for team
 - [ ] Team decision: Pattern A or B
 - [ ] Document all decisions in team charter/decision log
-- [ ] Connect Tableau/Looker to AMO_GOLD.MART_WEATHER_DEMAND
+- [ ] Connect Tableau to AMO_GOLD.MART_WEATHER_DEMAND
 - [ ] Streamlit app (stretch goal)
 
 ## Cut Order (if behind)

@@ -104,7 +104,7 @@ dbt docs generate         # updates lineage graph
 
 ## What's Next
 
-- [ ] Connect Tableau/Looker to `AMO_GOLD.MART_WEATHER_DEMAND`
+- [ ] Connect Tableau to `AMO_GOLD.MART_WEATHER_DEMAND`
 - [ ] Build Streamlit app with interactive borough/weather filters
 - [ ] Write Data Quality Incident Report (using DQ flags from Silver)
 - [ ] Architecture diagram of what was actually built
@@ -123,5 +123,5 @@ dbt docs generate         # updates lineage graph
 - [x] `mart_weather_demand` built (answers the question with revenue breakdown)
 - [x] `dbt test` passes (16/16 on Gold, 15 pass + 1 warn on Silver)
 - [x] `dbt docs generate` produces lineage graph
-- [ ] Dashboard (Tableau/Looker) connected to mart tables
+- [ ] Dashboard (Tableau) connected to mart tables
 - [ ] Streamlit app (stretch goal)
