@@ -261,7 +261,12 @@ python pipeline/orchestrate.py
 
 ## What's Next
 
-- Connect Tableau/Looker to AMO_GOLD.MART_WEATHER_DEMAND (42K rows, instant queries)
+- Connect Tableau/Looker to AMO_GOLD.MART_WEATHER_DEMAND (34K rows, instant queries)
 - Build Streamlit app with interactive borough/weather/year filters
-- Write Data Quality Incident Report (leveraging is_valid/dq_flag_reason from Silver)
 - Presentation preparation
+
+---
+
+## Related Documents
+
+- [Data Quality Incident Report](data_quality_report.md)
