@@ -20,6 +20,10 @@ We are a three-person data consultancy building a working data platform on top o
 - **Weather enrichment:** Open-Meteo Historical Weather API (hourly, NYC Central Park, 7,248 rows)
 - **Total:** 39,224,735 trip rows + 265 zones + 7,248 weather hours
 
+## Process Reference
+
+See [docs/pattern_a_steps.md](pattern_a_steps.md) for a detailed step-by-step log of what was done at each layer, why, and how to reproduce it.
+
 ## Architecture Decision: Pattern A (ELT, Warehouse-Centric)
 
 ```
