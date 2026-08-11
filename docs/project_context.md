@@ -61,8 +61,16 @@ Tableau / Looker + Streamlit (stretch goal)
 | `dbt/models/marts/dim_weather.sql` | dbt mart: weather dimension for dashboard drilldown |
 | `orlando/snowflake_connect.py` | Python connection helper (reads snow.cfg) |
 | `orlando/snow.cfg` | Snowflake credentials (gitignored, never committed) |
+| `orchestrate.py` | Single-command pipeline orchestration (runs everything end-to-end) |
 
-**Run order:**
+**Run order (orchestrated):**
+```bash
+python orchestrate.py
+```
+
+This single script executes all steps in order: Bronze infrastructure, data load, weather fetch, verification, dbt run (Silver + Gold), and dbt test. It is idempotent (safe to re-run) and fails fast with clear error messages.
+
+**Manual run order (if needed):**
 1. `01_bronze_load.sql` in Snowflake worksheet
 2. `python orlando/02_fetch_weather.py` from terminal
 3. `03_bronze_verify.sql` in Snowflake worksheet (confirm all 4 tables)
@@ -73,7 +81,7 @@ Tableau / Looker + Streamlit (stretch goal)
 
 | Goal | Priority | Status |
 | :--- | :--- | :--- |
-| Orchestration (single idempotent Python script) | High | Planned |
+| Orchestration (single idempotent Python script) | High | Done |
 | Streamlit dashboard | Medium | Planned |
 | BigQuery ML (forecast or clustering) | Low | Planned if time permits |
 

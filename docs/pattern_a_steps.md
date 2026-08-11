@@ -174,10 +174,37 @@ Clean dimension tables in GOLD schema for dashboard joins and drilldowns.
 
 ---
 
+## Orchestration
+
+### Step 16: Build orchestration script
+
+**File:** `orchestrate.py` (project root)
+
+Single Python script that runs the entire pipeline end-to-end: Bronze infrastructure, S3 data load, weather API fetch, row count verification, dbt run (Silver + Gold), and dbt test.
+
+**Why:** The rubric's "Excellent" tier for Pipeline (25 pts) requires "Runs end to end from a clean start. Idempotent. Someone else could run it from the README alone." This script satisfies all three: one command, no manual steps, safe to re-run.
+
+**Idempotency guarantees:**
+- Bronze tables use `CREATE OR REPLACE`, so re-running starts fresh
+- `COPY INTO` loads into the freshly created tables (no duplicate risk)
+- Weather table uses `CREATE OR REPLACE` before loading
+- dbt models are materialized as tables (`CREATE OR REPLACE TABLE`)
+- dbt tests are read-only validation
+
+**Error handling:** Each step logs progress. If any step fails, the script stops with a clear error message. Fix the issue and re-run from the top.
+
+**Usage:**
+```bash
+python orchestrate.py
+```
+
+**Result:** Full pipeline executes in a single command with row count reconciliation and validation at every layer.
+
+---
+
 ## What's Next
 
 - Connect Tableau/Looker to AMO_GOLD.MART_WEATHER_DEMAND (42K rows, instant queries)
 - Build Streamlit app with interactive borough/weather/year filters
 - Write Data Quality Incident Report (leveraging is_valid/dq_flag_reason from Silver)
-- Architecture diagram of the full pipeline as built
 - Presentation preparation
