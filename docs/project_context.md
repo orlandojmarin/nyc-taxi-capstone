@@ -55,6 +55,10 @@ Tableau / Looker + Streamlit (stretch goal)
 | `dbt/models/staging/stg_trips.sql` | dbt staging model: union, derive, flag DQ issues |
 | `dbt/models/staging/stg_zones.sql` | dbt staging model: clean zone lookup |
 | `dbt/models/staging/stg_weather.sql` | dbt staging model: weather with categories |
+| `dbt/models/marts/fct_trips.sql` | dbt mart: valid trips enriched with borough + weather + full revenue |
+| `dbt/models/marts/mart_weather_demand.sql` | dbt mart: aggregated demand/revenue by borough, weather, time, payment |
+| `dbt/models/marts/dim_zones.sql` | dbt mart: zone dimension for dashboard joins |
+| `dbt/models/marts/dim_weather.sql` | dbt mart: weather dimension for dashboard drilldown |
 | `orlando/snowflake_connect.py` | Python connection helper (reads snow.cfg) |
 | `orlando/snow.cfg` | Snowflake credentials (gitignored, never committed) |
 
@@ -62,8 +66,8 @@ Tableau / Looker + Streamlit (stretch goal)
 1. `01_bronze_load.sql` in Snowflake worksheet
 2. `python orlando/02_fetch_weather.py` from terminal
 3. `03_bronze_verify.sql` in Snowflake worksheet (confirm all 4 tables)
-4. `cd dbt && dbt run` (builds Silver layer: stg_trips, stg_zones, stg_weather)
-5. `dbt test` (validates Silver layer with automated checks)
+4. `cd dbt && dbt run` (builds Silver + Gold layers)
+5. `dbt test` (validates all models with automated checks)
 
 ## Stretch Goals
 
@@ -155,7 +159,8 @@ Tableau / Looker + Streamlit (stretch goal)
 - [x] Bronze layer complete (Aug 10): 38.8M yellow, 465K green, 265 zones, 7,248 weather hours
 - [x] Silver layer complete (Aug 11): dbt project with stg_trips (39.2M rows), stg_zones (265), stg_weather (7,248). DQ flags added. 16 tests (15 pass, 1 warn on payment_type).
 - [x] Why models are tables vs views: staging models are tables (39M rows, too expensive to rebuild on every query as views; dashboard and Gold models read Silver repeatedly)
-- [ ] Analytical question chosen:
+- [x] Analytical question chosen: "How does adverse weather affect taxi demand across NYC boroughs, and how did those patterns shift between 2025 and 2026?"
+- [x] Gold layer complete (Aug 11): fct_trips (38M rows), mart_weather_demand (42,582 rows), dim_zones (265), dim_weather (7,248). 16 Gold tests passing.
 - [ ] How we handled each data defect
 - [ ] Warehouse size and auto-suspend settings
 - [ ] What we cut if behind schedule
@@ -176,10 +181,13 @@ Tableau / Looker + Streamlit (stretch goal)
 - [x] Silver layer complete via dbt: stg_trips (39,224,735 rows), stg_zones (265), stg_weather (7,248)
 - [x] Data quality flags added: is_valid + dq_flag_reason columns on stg_trips
 - [x] dbt tests passing (15 pass, 1 expected warn on undocumented payment_type values)
+- [x] Analytical question chosen: "How does adverse weather affect taxi demand across NYC boroughs, and how did those patterns shift between 2025 and 2026?"
+- [x] Gold layer complete: fct_trips (38,053,445 rows), mart_weather_demand (42,582), dim_zones (265), dim_weather (7,248)
+- [x] Gold tests all passing (16/16)
+- [x] dbt docs regenerated with full Bronze-Silver-Gold lineage
 - [ ] Team decision: Pattern A or B (ideally by noon)
-- [ ] Decide analytical question (shapes the entire Gold layer)
 - [ ] Document all decisions in team charter/decision log
-- [ ] Complete Gold layer with dbt (mart models and tests)
+- [ ] Connect Tableau/Looker to GOLD.MART_WEATHER_DEMAND
 - [ ] Begin Streamlit app and/or orchestration script (stretch, if time permits)
 
 ## Cut Order (if behind)

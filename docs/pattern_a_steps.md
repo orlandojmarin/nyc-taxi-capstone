@@ -124,10 +124,60 @@ Added derived columns: `weather_date`, `weather_hour`, `weather_category` (Clear
 
 ---
 
-## What's next: Gold Layer
+## Gold Layer (Snowflake SILVER to Snowflake GOLD via dbt)
 
-The Gold layer depends on choosing an analytical question. Gold mart models will:
-- Filter to `is_valid = TRUE`
-- Join trips to zones and weather
-- Aggregate into the specific metrics needed to answer the question
-- Serve as the data source for the Tableau/Looker dashboard
+### Step 11: Choose analytical question
+
+**Question:** "How does adverse weather affect taxi demand across NYC boroughs, and how did those patterns shift between 2025 and 2026?"
+
+**Why this question:** It uses all three data sources (trips, zones, weather), produces a clear YoY comparison, generates visually compelling borough-level maps and charts, and leads to a concrete business recommendation (where to stage drivers during storms). The weather enrichment we built in Bronze becomes the core analytical differentiator rather than a decorative addition.
+
+### Step 12: Build fct_trips (enriched fact table)
+
+**File:** `dbt/models/marts/fct_trips.sql`
+
+Joins `stg_trips` (filtered to `IS_VALID = TRUE`) with `stg_zones` (for pickup and dropoff borough/zone names) and `stg_weather` (on date + hour for weather conditions at time of pickup). Carries through all revenue columns: fare_amount, extra, mta_tax, tip_amount, tolls_amount, improvement_surcharge, congestion_surcharge, cbd_congestion_fee, airport_fee, total_amount, and payment_type.
+
+**Why:** A single enriched table that downstream models and ad-hoc queries can use without repeating joins. Filtering to valid records here means Gold consumers never accidentally include flagged rows.
+
+**Issue resolved (mixed-case columns from Silver):** The Silver table `STG_TRIPS` has mixed column casing: columns we aliased in stg_trips.sql (like `pickup_at`, `taxi_type`) are stored as UPPERCASE, but columns passed through with double-quoted lowercase names from Bronze (like `"fare_amount"`, `"tip_amount"`) remain lowercase. Had to reference each column with the correct case: uppercase for aliased columns, double-quoted lowercase for pass-through columns. All columns are re-aliased to clean lowercase names in the output.
+
+**Result:** 38,053,445 rows (filtered from 39.2M; ~1.17M rows flagged invalid in Silver were excluded).
+
+### Step 13: Build mart_weather_demand (analytical aggregation)
+
+**File:** `dbt/models/marts/mart_weather_demand.sql`
+
+Aggregates fct_trips by: pickup_borough, weather_category, is_adverse_weather, pickup_year, pickup_month, pickup_hour, is_rush_hour, is_night, is_weekend, payment_type.
+
+Metrics: trip_count, total_revenue, total_fares, total_tips, total_tolls, total_congestion_surcharge, total_cbd_fee, avg_fare_total, avg_tip, avg_duration_minutes, avg_distance.
+
+**Why:** Pre-aggregated table (42,582 rows) that Tableau/Streamlit can query instantly. Contains every dimension needed to answer the question: borough (where), weather (condition), year/month (when/YoY), and payment_type (revenue breakdown). Keeps the dashboard fast without hitting 38M rows on every chart.
+
+**Result:** 42,582 rows.
+
+### Step 14: Build dim_zones and dim_weather
+
+**Files:** `dbt/models/marts/dim_zones.sql`, `dbt/models/marts/dim_weather.sql`
+
+Clean dimension tables in GOLD schema for dashboard joins and drilldowns.
+
+**Why:** Dashboard tools need lookup tables to display human-readable zone names and weather details. Keeping dimensions in GOLD alongside the marts means the Tableau connection only needs one schema.
+
+### Step 15: Run dbt test on Gold models
+
+**File:** `dbt/models/marts/_models.yml`
+
+16 tests covering: not_null on all key columns, accepted_values on taxi_type, unique on dim_zones.location_id, relationships (fct_trips.pickup_zone_id to dim_zones.location_id).
+
+**Result:** 16 pass, 0 warn, 0 error.
+
+---
+
+## What's Next
+
+- Connect Tableau/Looker to GOLD.MART_WEATHER_DEMAND (42K rows, instant queries)
+- Build Streamlit app with interactive borough/weather/year filters
+- Write Data Quality Incident Report (leveraging is_valid/dq_flag_reason from Silver)
+- Architecture diagram of the full pipeline as built
+- Presentation preparation

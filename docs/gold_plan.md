@@ -1,128 +1,126 @@
-# Gold Layer Plan (Silver → Gold)
+# Gold Layer Plan (Silver to Gold)
 
-Gold is where your data becomes answers. Silver is generic (cleaned, conformed, anyone could use it). Gold is specific to YOUR analytical question.
-
----
-
-## What Gold contains
-
-- **Fact tables:** one row per trip, joined to dimensions, filtered to valid records only
-- **Dimension tables:** zone names, weather categories (lookup tables for human-readable labels)
-- **Mart/aggregation tables:** pre-computed summaries that answer your question directly (e.g., year-over-year comparisons)
+Gold is where your data becomes answers. Silver is generic (cleaned, conformed, anyone could use it). Gold is specific to the analytical question.
 
 ---
 
-## Part 1: dbt setup (one-time, ~30-45 min)
+## Analytical Question
 
-You haven't set up dbt for this project yet. Here's what that involves:
+**"How does adverse weather affect taxi demand across NYC boroughs, and how did those patterns shift between 2025 and 2026?"**
 
-1. **Install dbt-snowflake** on your machine: `pip install dbt-snowflake`
-2. **Copy the starter skeleton** from the Week 8 folder into your repo (it has `dbt_project.yml`, `_sources.yml`, sample `stg_trips.sql`)
-3. **Create `profiles.yml`** with your Snowflake credentials (same info as `snow.cfg`, just in YAML format)
-4. **Run `dbt debug`** to confirm the connection works
-5. **Port your Silver SQL** into dbt staging models (replace raw SQL with `{{ source('bronze', 'yellow_raw') }}` references)
-
-The starter skeleton already has most of this scaffolded. You're adapting, not starting from scratch.
+Supporting analysis includes trip duration, revenue impact, and payment type breakdowns.
 
 ---
 
-## Part 2: Gold models to build
+## Gold Models (built and passing)
 
 ### fct_trips (fact table)
 
-- Source: `stg_trips` joined to `stg_zones` (pickup and dropoff) and `stg_weather`
-- Filters: only `is_valid = TRUE` records (the ones that passed cleaning)
-- Adds: borough names, zone names, weather_category, is_adverse_weather
-- Materialized as: **table** (queried repeatedly by dashboard)
+- **Source:** `stg_trips` joined to `stg_zones` (pickup and dropoff) and `stg_weather` (on date + hour)
+- **Filter:** only `IS_VALID = TRUE` records
+- **Adds:** pickup/dropoff borough and zone names, weather_category, is_adverse_weather, temperature, precipitation, wind speed
+- **Revenue columns:** fare_amount, extra, mta_tax, tip_amount, tolls_amount, improvement_surcharge, congestion_surcharge, cbd_congestion_fee, airport_fee, total_amount, payment_type
+- **Materialized as:** table (38,053,445 rows)
+
+### mart_weather_demand (the main analytical table)
+
+- **Source:** `fct_trips`
+- **Grouped by:** pickup_borough, weather_category, is_adverse_weather, pickup_year, pickup_month, pickup_hour, is_rush_hour, is_night, is_weekend, payment_type
+- **Metrics:** trip_count, total_revenue, total_fares, total_tips, total_tolls, total_congestion_surcharge, total_cbd_fee, avg_fare_total, avg_tip, avg_duration_minutes, avg_distance
+- **Materialized as:** table (42,582 rows)
+- **Use:** This is what Tableau/Streamlit connects to. Pre-aggregated so dashboards are fast.
 
 ### dim_zones (dimension)
 
-- Source: `stg_zones`
-- Just a clean copy with location_id, borough, zone_name, service_zone
-- Materialized as: **table**
+- **Source:** `stg_zones`
+- **Columns:** location_id, borough, zone_name, service_zone
+- **Materialized as:** table (265 rows)
 
-### dim_weather (dimension, optional)
+### dim_weather (dimension)
 
-- Source: `stg_weather`
-- Hourly weather with category, useful for drilling into dashboard
-- Materialized as: **table**
-
-### mart_yoy_comparison (the money table)
-
-- Source: `fct_trips`
-- Aggregates by your analytical question dimensions (e.g., month, zone, weather, hour)
-- Computes 2025 vs 2026 metrics side-by-side
-- Calculates percent change year-over-year
-- This is what your Tableau/Looker dashboard connects to
-- Materialized as: **table**
+- **Source:** `stg_weather`
+- **Columns:** All weather attributes plus category and adverse flag
+- **Materialized as:** table (7,248 rows)
+- **Use:** Drilldown in dashboard, join for ad-hoc queries
 
 ---
 
-## Part 3: dbt tests to add
+## dbt Tests (Gold layer)
 
-| Test | Model | Column | Why |
+16 tests, all passing:
+
+| Test | Model | Column | Purpose |
 | :--- | :--- | :--- | :--- |
-| not_null | fct_trips | pickup_zone_id, dropoff_zone_id | Joins would silently drop rows |
-| unique | dim_zones | location_id | Dimension key must be unique |
-| accepted_values | fct_trips | taxi_type | Only 'yellow' and 'green' |
-| accepted_values | fct_trips | payment_type | Values 1-6 only (warn, don't fail) |
-| relationships | fct_trips | pickup_zone_id → dim_zones.location_id | Referential integrity |
-| not_null | mart_yoy_comparison | pickup_year | Grouping key can't be null |
+| not_null | fct_trips | pickup_at | Core timestamp |
+| not_null | fct_trips | taxi_type | Required for any split |
+| accepted_values | fct_trips | taxi_type (yellow/green) | Only two valid types |
+| not_null | fct_trips | pickup_borough | Borough join worked (warn) |
+| not_null | fct_trips | total_amount | Revenue column present |
+| relationships | fct_trips | pickup_zone_id to dim_zones (warn) | Referential integrity |
+| unique | dim_zones | location_id | Dimension key |
+| not_null | dim_zones | location_id | Dimension key |
+| not_null | dim_zones | borough | Required grouping |
+| not_null | dim_weather | weather_date | Join key |
+| not_null | dim_weather | weather_hour | Join key |
+| not_null | dim_weather | weather_category | Grouping column |
+| not_null | mart_weather_demand | pickup_borough | Grouping key |
+| not_null | mart_weather_demand | pickup_year | YoY key |
+| not_null | mart_weather_demand | trip_count | Core metric |
+| not_null | mart_weather_demand | total_revenue | Core metric |
 
 ---
 
-## Part 4: Analytical question (must decide before building Gold)
+## How mart_weather_demand answers the question
 
-Your Gold layer is shaped by what you're asking. Example questions that work well:
+To compare demand during adverse vs clear weather by borough, YoY:
 
-- "How did the CBD congestion fee (Jan 2025) affect trip patterns, fares, and demand by zone?"
-- "Does adverse weather increase demand, fares, or trip duration, and did that change YoY?"
-- "Which zones saw the biggest YoY change in ridership, and why?"
-- "Did tipping behavior change YoY, controlling for the cash tip trap?"
+```sql
+SELECT
+    pickup_borough,
+    pickup_year,
+    is_adverse_weather,
+    SUM(trip_count) as trips,
+    SUM(total_revenue) as revenue,
+    AVG(avg_duration_minutes) as avg_duration
+FROM GOLD.MART_WEATHER_DEMAND
+GROUP BY 1, 2, 3
+ORDER BY 1, 2, 3;
+```
 
-Pick ONE. The mart_yoy_comparison table is built to answer that specific question.
+For Tableau/Streamlit, connect directly to `GOLD.MART_WEATHER_DEMAND`. It's small (42K rows) and pre-aggregated, so dashboards are instant.
 
 ---
 
-## Part 5: dbt commands (run order)
+## dbt Commands
 
 ```bash
-dbt deps          # install packages (if any)
-dbt run           # builds all models (staging views + mart tables)
-dbt test          # runs all tests
-dbt docs generate # creates documentation + lineage graph
-dbt docs serve    # opens the lineage graph in browser
+dbt run --select marts    # builds Gold models
+dbt test --select marts   # validates Gold models
+dbt docs generate         # updates lineage graph
 ```
 
 ---
 
-## Time estimate: Silver → Gold vs Bronze → Silver
+## What's Next
 
-| Phase | Effort | Why |
-| :--- | :--- | :--- |
-| Bronze → Silver | ~1-1.5 hours | Fixed scope: union, rename, derive, clean. Same for everyone regardless of question. |
-| Silver → Gold | ~2-3 hours | Variable scope: depends on your question, number of marts, dbt setup. More creative decisions involved. |
-
-Gold takes longer because:
-- You need to set up dbt (one-time cost)
-- You need to decide your analytical question first
-- The mart models require thinking about what aggregations serve your question
-- dbt tests require thought about what would actually break your analysis
-- You iterate: build a mart, look at the output, adjust
-
-But the SQL itself is simpler. Gold queries are just GROUP BYs, JOINs, and CASE statements on top of already-clean Silver data. The complexity is in the decisions, not the code.
+- [ ] Connect Tableau/Looker to `GOLD.MART_WEATHER_DEMAND`
+- [ ] Build Streamlit app with interactive borough/weather filters
+- [ ] Write Data Quality Incident Report (using DQ flags from Silver)
+- [ ] Architecture diagram of what was actually built
+- [ ] Prepare presentation with YoY weather-demand findings
 
 ---
 
 ## Checklist
 
-- [ ] Analytical question decided
-- [ ] dbt installed and connected to Snowflake
-- [ ] Staging models ported from manual SQL into dbt
-- [ ] `dbt run` succeeds for staging layer
-- [ ] `fct_trips` built (joined, filtered to valid)
-- [ ] `dim_zones` built
-- [ ] `mart_yoy_comparison` built (answers your question)
-- [ ] `dbt test` passes (or warns with documented reasons)
-- [ ] `dbt docs generate` produces lineage graph
+- [x] Analytical question decided
+- [x] dbt installed and connected to Snowflake
+- [x] Staging models built and tested (Silver layer)
+- [x] `fct_trips` built (joined, filtered to valid, enriched with borough + weather)
+- [x] `dim_zones` built
+- [x] `dim_weather` built
+- [x] `mart_weather_demand` built (answers the question with revenue breakdown)
+- [x] `dbt test` passes (16/16 on Gold, 15 pass + 1 warn on Silver)
+- [x] `dbt docs generate` produces lineage graph
 - [ ] Dashboard (Tableau/Looker) connected to mart tables
+- [ ] Streamlit app (stretch goal)
