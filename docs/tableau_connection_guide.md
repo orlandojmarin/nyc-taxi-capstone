@@ -1,0 +1,123 @@
+# Tableau Connection Guide
+
+How to connect Tableau to the Gold layer data for our analytical question:
+**"How does adverse weather affect taxi demand across NYC boroughs, and how did those patterns shift between 2025 and 2026?"**
+
+---
+
+## Snowflake Connection Details
+
+| Setting | Value |
+| :--- | :--- |
+| Server | FFOJZFH-WPA36811.snowflakecomputing.com |
+| Role | DE |
+| Warehouse | COMPUTE_WH |
+| Database | TECHCATALYST |
+| Schema | AMO_GOLD |
+| Authentication | Your normal Snowflake username/password |
+
+---
+
+## Primary Data Source: MART_WEATHER_DEMAND
+
+This is the main table to use. It has 34,719 rows (pre-aggregated from 38M trips), so Tableau will query it instantly with no performance issues. Only trips attributable to a real NYC borough are included (Unknown/N/A zone IDs excluded).
+
+**Connect to:** `TECHCATALYST.AMO_GOLD.MART_WEATHER_DEMAND`
+
+### Column Descriptions
+
+| Column | Type | Description |
+| :--- | :--- | :--- |
+| `PICKUP_BOROUGH` | VARCHAR | NYC borough where the trip started (Manhattan, Brooklyn, Queens, Bronx, Staten Island, EWR). Only real boroughs are included. |
+| `WEATHER_CATEGORY` | VARCHAR | Weather condition at time of pickup (Clear, Cloudy, Fog, Drizzle, Rain, Snow, Rain Showers, Snow Showers, Thunderstorm) |
+| `IS_ADVERSE_WEATHER` | BOOLEAN | TRUE when Rain, Snow, or high wind. Use this for simple good-weather vs. bad-weather comparisons |
+| `PICKUP_YEAR` | INT | 2025 or 2026. Use this for year-over-year comparisons |
+| `PICKUP_MONTH` | INT | 1-5 (January through May) |
+| `PICKUP_HOUR` | INT | 0-23. Hour of day when the trip started |
+| `IS_RUSH_HOUR` | BOOLEAN | TRUE during 7-8am and 5-6pm |
+| `IS_NIGHT` | BOOLEAN | TRUE between 10pm and 5am |
+| `IS_WEEKEND` | BOOLEAN | TRUE on Saturday/Sunday |
+| `PAYMENT_TYPE` | INT | 1=Credit card, 2=Cash, 3=No charge, 4=Dispute, 5=Unknown, 6=Voided |
+| `TRIP_COUNT` | INT | Number of trips in this group |
+| `TOTAL_REVENUE` | FLOAT | Sum of total_amount for all trips in this group |
+| `TOTAL_FARES` | FLOAT | Sum of base fare only |
+| `TOTAL_TIPS` | FLOAT | Sum of tips (note: cash tips show as $0, only credit card tips are recorded) |
+| `TOTAL_TOLLS` | FLOAT | Sum of toll charges |
+| `TOTAL_CONGESTION_SURCHARGE` | FLOAT | Sum of congestion surcharges |
+| `TOTAL_CBD_FEE` | FLOAT | Sum of CBD (Central Business District) congestion fees, new in 2025 |
+| `AVG_FARE_TOTAL` | FLOAT | Average total fare per trip |
+| `AVG_TIP` | FLOAT | Average tip per trip |
+| `AVG_DURATION_MINUTES` | FLOAT | Average trip duration in minutes |
+| `AVG_DISTANCE` | FLOAT | Average trip distance in miles |
+
+### Important Data Notes
+
+- **Cash tip trap:** Payment type 2 (cash) always shows $0 tips because cash tips are not recorded by the meter. Do not include cash trips in any tip analysis, or explicitly call this out.
+- **Year-over-year:** Both years cover January through May only. Comparisons are fair month-to-month.
+- **Borough coverage:** Manhattan dominates trip volume. Staten Island and EWR have very few trips.
+
+---
+
+## Supporting Tables (optional, for drilldowns)
+
+| Table | Rows | Use |
+| :--- | :--- | :--- |
+| `DIM_ZONES` | 265 | Zone names and service zones, if you want to drill below borough level |
+| `DIM_WEATHER` | 7,248 | Full hourly weather detail (temperature, precipitation, wind, etc.) |
+| `FCT_TRIPS` | 38,053,445 | Individual trip records. Only use this if you need trip-level detail. It's large, so queries will be slower. |
+
+---
+
+## Suggested Visualizations
+
+These directly answer the analytical question and make a strong dashboard:
+
+### 1. Demand Impact: Adverse vs. Clear Weather by Borough (bar chart or grouped bar)
+- X axis: PICKUP_BOROUGH
+- Color: IS_ADVERSE_WEATHER (TRUE/FALSE)
+- Value: SUM(TRIP_COUNT)
+- Shows which boroughs lose the most demand during bad weather
+
+### 2. Year-over-Year Shift (side-by-side or line chart)
+- Filter or color by PICKUP_YEAR (2025 vs 2026)
+- Group by PICKUP_BOROUGH + IS_ADVERSE_WEATHER
+- Value: SUM(TRIP_COUNT) or SUM(TOTAL_REVENUE)
+- Shows whether weather sensitivity changed between years
+
+### 3. Revenue per Trip During Adverse Weather (highlight table or bar)
+- Rows: PICKUP_BOROUGH
+- Columns: WEATHER_CATEGORY
+- Value: AVG_FARE_TOTAL
+- Shows whether fares increase during bad weather (surge/longer trips)
+
+### 4. Hourly Demand Pattern by Weather (line chart)
+- X axis: PICKUP_HOUR
+- Lines: WEATHER_CATEGORY or IS_ADVERSE_WEATHER
+- Value: SUM(TRIP_COUNT)
+- Shows how weather disrupts the normal daily demand curve
+
+### 5. Monthly Trend with Weather Overlay (combo chart)
+- X axis: PICKUP_MONTH
+- Bars: SUM(TRIP_COUNT)
+- Line or color: proportion of adverse weather hours that month
+- Shows seasonal patterns
+
+---
+
+## Quick Test Query
+
+Run this in Tableau or Snowflake to confirm your connection works:
+
+```sql
+SELECT
+    PICKUP_BOROUGH,
+    PICKUP_YEAR,
+    IS_ADVERSE_WEATHER,
+    SUM(TRIP_COUNT) AS trips,
+    SUM(TOTAL_REVENUE) AS revenue
+FROM TECHCATALYST.AMO_GOLD.MART_WEATHER_DEMAND
+GROUP BY 1, 2, 3
+ORDER BY 1, 2, 3;
+```
+
+You should get 24 rows (6 boroughs x 2 years x 2 weather conditions).

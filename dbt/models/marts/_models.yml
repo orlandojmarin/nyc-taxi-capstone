@@ -1,0 +1,85 @@
+version: 2
+
+models:
+  - name: fct_trips
+    description: >
+      Valid trips enriched with borough names and hourly weather.
+      One row per trip. Filtered to is_valid = TRUE from Silver.
+    columns:
+      - name: pickup_at
+        tests:
+          - not_null
+
+      - name: taxi_type
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['yellow', 'green']
+
+      - name: pickup_borough
+        tests:
+          - not_null:
+              config:
+                severity: warn
+
+      - name: total_amount
+        tests:
+          - not_null
+
+      - name: pickup_zone_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_zones')
+                field: location_id
+              config:
+                severity: warn
+
+  - name: mart_weather_demand
+    description: >
+      Aggregated trip demand and revenue metrics by borough, weather,
+      time, and payment type. Powers the Tableau/Streamlit dashboards.
+    columns:
+      - name: pickup_borough
+        tests:
+          - not_null
+
+      - name: pickup_year
+        tests:
+          - not_null
+
+      - name: trip_count
+        tests:
+          - not_null
+
+      - name: total_revenue
+        tests:
+          - not_null
+
+  - name: dim_zones
+    description: Zone dimension with borough and zone name.
+    columns:
+      - name: location_id
+        tests:
+          - unique
+          - not_null
+
+      - name: borough
+        tests:
+          - not_null
+
+  - name: dim_weather
+    description: Hourly weather dimension with category and adverse flag.
+    columns:
+      - name: weather_date
+        tests:
+          - not_null
+
+      - name: weather_hour
+        tests:
+          - not_null
+
+      - name: weather_category
+        tests:
+          - not_null
