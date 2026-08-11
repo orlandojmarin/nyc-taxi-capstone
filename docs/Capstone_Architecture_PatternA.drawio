@@ -85,7 +85,7 @@
         <mxCell id="gld_fct" value="AMO_GOLD.&#10;fct_trips&#10;&#10;Valid trips joined to zones + weather&#10;All revenue columns&#10;Borough, weather_category&#10;38,053,445 rows" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFD700;strokeColor=#DAA520;fontSize=10;fontStyle=0;" vertex="1" parent="1">
           <mxGeometry x="920" y="150" width="240" height="110" as="geometry" />
         </mxCell>
-        <mxCell id="gld_mart" value="AMO_GOLD.&#10;mart_weather_demand&#10;&#10;Aggregated by borough, weather,&#10;year, month, hour, payment_type&#10;Demand + revenue metrics&#10;42,582 rows" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFD700;strokeColor=#DAA520;fontSize=10;fontStyle=0;" vertex="1" parent="1">
+        <mxCell id="gld_mart" value="AMO_GOLD.&#10;mart_weather_demand&#10;&#10;Aggregated by borough, weather,&#10;year, month, hour, payment_type&#10;Demand + revenue metrics&#10;34,719 rows" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFD700;strokeColor=#DAA520;fontSize=10;fontStyle=0;" vertex="1" parent="1">
           <mxGeometry x="920" y="290" width="240" height="115" as="geometry" />
         </mxCell>
         <mxCell id="gld_dim_zones" value="AMO_GOLD.&#10;dim_zones&#10;(borough, zone_name, 265 rows)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEC8B;strokeColor=#DAA520;fontSize=10;fontStyle=0;" vertex="1" parent="1">
@@ -109,16 +109,16 @@
         <mxCell id="orch_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#455A64;dashed=1;" vertex="1" parent="1">
           <mxGeometry x="280" y="720" width="740" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="orch_title" value="Orchestration: dbt run + dbt test (re-runnable, idempotent)" style="text;html=1;align=left;fontSize=11;fontStyle=1;fontColor=#455A64;" vertex="1" parent="1">
+        <mxCell id="orch_title" value="Orchestration: python pipeline/orchestrate.py (single command, re-runnable, idempotent)" style="text;html=1;align=left;fontSize=11;fontStyle=1;fontColor=#455A64;" vertex="1" parent="1">
           <mxGeometry x="290" y="725" width="400" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="task1" value="Step 1: Create Stage&#10;+ COPY INTO AMO_BRONZE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#455A64;fontSize=10;" vertex="1" parent="1">
+        <mxCell id="task1" value="Step 1: Bronze infra&#10;+ COPY INTO AMO_BRONZE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#455A64;fontSize=10;" vertex="1" parent="1">
           <mxGeometry x="300" y="750" width="170" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="task2" value="Step 2: python&#10;02_fetch_weather.py" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#455A64;fontSize=10;" vertex="1" parent="1">
+        <mxCell id="task2" value="Step 2: Weather API&#10;fetch + load" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#455A64;fontSize=10;" vertex="1" parent="1">
           <mxGeometry x="510" y="750" width="160" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="task3" value="Step 3: dbt run&#10;+ dbt test" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#455A64;fontSize=10;" vertex="1" parent="1">
+        <mxCell id="task3" value="Step 3: dbt run&#10;+ dbt test + verify" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#455A64;fontSize=10;" vertex="1" parent="1">
           <mxGeometry x="720" y="750" width="160" height="40" as="geometry" />
         </mxCell>
         <mxCell id="a_task1_task2" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#455A64;strokeWidth=2;" edge="1" parent="1" source="task1" target="task2"><mxGeometry relative="1" as="geometry" /></mxCell>
