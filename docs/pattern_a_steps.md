@@ -4,6 +4,20 @@ What was done at each stage, why, and how to reproduce it. Issues encountered an
 
 ---
 
+## Pattern A: Pros and Cons
+
+| Pros | Cons |
+| :--- | :--- |
+| Single environment for all transforms (Snowflake + dbt), so debugging happens in one place | All compute burns Snowflake credits, no way to offload heavy processing |
+| Every transformation is tested and version-controlled through dbt | Demonstrates fewer tools overall (no Glue, no Spark, no DataFrame work) |
+| Snowflake handles 39M rows natively with no memory management on our end | If the raw data had complex nested structures or binary blobs, SQL would struggle |
+| Full pipeline re-runs in ~6 minutes, fast iteration during development | No intermediate conformed S3 layer that other non-Snowflake consumers could reuse |
+| No intermediate storage layer to manage (no S3 conformed zone, no partitioning decisions) | All downstream consumers must go through Snowflake |
+| Easier team collaboration since the whole team knows SQL | Row-level cleaning logic in SQL can be verbose compared to DataFrame operations |
+| Fewer moving parts means fewer failure modes during a one-week sprint | |
+
+---
+
 ## Row Count Summary
 
 Step-by-step row counts showing exactly what happens to the data at each operation.
