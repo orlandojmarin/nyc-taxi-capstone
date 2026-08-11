@@ -30,13 +30,13 @@ See [docs/pattern_a_steps.md](pattern_a_steps.md) for a detailed step-by-step lo
 S3 RAW (parquet)
    |  external stage + COPY INTO
    v
-Snowflake BRONZE (yellow_raw, green_raw, zone_lookup, weather_hourly)
+Snowflake AMO_BRONZE (yellow_raw, green_raw, zone_lookup, weather_hourly)
    |  dbt / SQL
    v
-Snowflake SILVER (stg_trips, stg_zones, stg_weather)
+Snowflake AMO_SILVER (stg_trips, stg_zones, stg_weather)
    |  dbt
    v
-Snowflake GOLD (marts serving analytical question)
+Snowflake AMO_GOLD (marts serving analytical question)
    |
    v
 Tableau / Looker + Streamlit (stretch goal)
@@ -138,7 +138,7 @@ Tableau / Looker + Streamlit (stretch goal)
 
 - **Account:** FFOJZFH-WPA36811
 - **Database:** TECHCATALYST
-- **Schemas:** BRONZE, SILVER (staging), GOLD (marts)
+- **Schemas:** AMO_BRONZE, AMO_SILVER (staging), AMO_GOLD (marts)
 - **Role:** DE
 - **Warehouse:** COMPUTE_WH
 - **Credentials:** `snow.cfg` file (never commit)
@@ -187,7 +187,7 @@ Tableau / Looker + Streamlit (stretch goal)
 - [x] dbt docs regenerated with full Bronze-Silver-Gold lineage
 - [ ] Team decision: Pattern A or B (ideally by noon)
 - [ ] Document all decisions in team charter/decision log
-- [ ] Connect Tableau/Looker to GOLD.MART_WEATHER_DEMAND
+- [ ] Connect Tableau/Looker to AMO_GOLD.MART_WEATHER_DEMAND
 - [ ] Begin Streamlit app and/or orchestration script (stretch, if time permits)
 
 ## Cut Order (if behind)

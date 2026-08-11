@@ -82,12 +82,12 @@ SELECT
     SUM(trip_count) as trips,
     SUM(total_revenue) as revenue,
     AVG(avg_duration_minutes) as avg_duration
-FROM GOLD.MART_WEATHER_DEMAND
+FROM AMO_GOLD.MART_WEATHER_DEMAND
 GROUP BY 1, 2, 3
 ORDER BY 1, 2, 3;
 ```
 
-For Tableau/Streamlit, connect directly to `GOLD.MART_WEATHER_DEMAND`. It's small (42K rows) and pre-aggregated, so dashboards are instant.
+For Tableau/Streamlit, connect directly to `AMO_GOLD.MART_WEATHER_DEMAND`. It's small (42K rows) and pre-aggregated, so dashboards are instant.
 
 ---
 
@@ -103,7 +103,7 @@ dbt docs generate         # updates lineage graph
 
 ## What's Next
 
-- [ ] Connect Tableau/Looker to `GOLD.MART_WEATHER_DEMAND`
+- [ ] Connect Tableau/Looker to `AMO_GOLD.MART_WEATHER_DEMAND`
 - [ ] Build Streamlit app with interactive borough/weather filters
 - [ ] Write Data Quality Incident Report (using DQ flags from Silver)
 - [ ] Architecture diagram of what was actually built

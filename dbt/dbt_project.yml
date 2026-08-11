@@ -18,7 +18,7 @@ models:
   capstone:
     staging:
       +materialized: table
-      +schema: SILVER
+      +schema: AMO_SILVER
     marts:
       +materialized: table
-      +schema: GOLD
+      +schema: AMO_GOLD

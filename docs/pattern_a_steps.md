@@ -42,7 +42,7 @@ Used `INFER_SCHEMA` to read the Parquet column names and types from both Yellow 
 
 **File:** `orlando/02_fetch_weather.py`
 
-Python script that calls the Open-Meteo Historical Weather API for NYC Central Park (Jan 2025 through May 2026), transforms the response into a DataFrame with imperial units and human-readable descriptions, then loads directly into `BRONZE.WEATHER_HOURLY` via the Snowflake Python connector.
+Python script that calls the Open-Meteo Historical Weather API for NYC Central Park (Jan 2025 through May 2026), transforms the response into a DataFrame with imperial units and human-readable descriptions, then loads directly into `AMO_BRONZE.WEATHER_HOURLY` via the Snowflake Python connector.
 
 **Why:** Weather is a natural enrichment for taxi demand analysis. Open-Meteo is free, requires no API key, and provides hourly granularity which matches well with trip pickup timestamps.
 
@@ -176,7 +176,7 @@ Clean dimension tables in GOLD schema for dashboard joins and drilldowns.
 
 ## What's Next
 
-- Connect Tableau/Looker to GOLD.MART_WEATHER_DEMAND (42K rows, instant queries)
+- Connect Tableau/Looker to AMO_GOLD.MART_WEATHER_DEMAND (42K rows, instant queries)
 - Build Streamlit app with interactive borough/weather/year filters
 - Write Data Quality Incident Report (leveraging is_valid/dq_flag_reason from Silver)
 - Architecture diagram of the full pipeline as built

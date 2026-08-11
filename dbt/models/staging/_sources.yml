@@ -3,7 +3,7 @@ version: 2
 sources:
   - name: bronze
     database: TECHCATALYST
-    schema: BRONZE
+    schema: AMO_BRONZE
     description: Raw taxi trip records loaded from the capstone S3 bucket, untransformed.
 
     tables:
