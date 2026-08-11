@@ -111,6 +111,37 @@ This is the main table to use. It has 34,719 rows (pre-aggregated from 38M trips
 
 ---
 
+## Normalizing the Data (Important)
+
+Manhattan dominates raw trip counts (it has far more taxi activity than other boroughs). If you chart raw SUM(TRIP_COUNT) by borough, Manhattan will dwarf everything else and you won't see meaningful patterns in Brooklyn, Queens, etc.
+
+**How to normalize: use percentage change instead of raw counts.**
+
+The idea: for each borough, compare its own adverse-weather demand to its own clear-weather demand. That way you're comparing each borough against itself, not against Manhattan.
+
+### Option 1: Calculated field in Tableau
+
+Create a calculated field called something like "Pct Demand Drop":
+
+```
+(SUM(IF [Is Adverse Weather] = FALSE THEN [Trip Count] END)
+ - SUM(IF [Is Adverse Weather] = TRUE THEN [Trip Count] END))
+/ SUM(IF [Is Adverse Weather] = FALSE THEN [Trip Count] END)
+```
+
+This gives you the percentage of trips lost during adverse weather, per borough. A value of 0.12 means that borough loses 12% of its demand when weather is bad. This is flexible and lets you slice by month, hour, year, etc.
+
+### Option 2: Use "Percent of Total" in Tableau
+
+For quick normalization without calculated fields:
+1. Drag TRIP_COUNT to the value shelf
+2. Right-click the pill on the Marks card, select "Quick Table Calculation" then "Percent of Total"
+3. Right-click again, select "Compute Using" then "Table (across)" or the specific dimension you want to normalize within
+
+This shows each borough's share of trips rather than raw counts. Quickest option if you just want to level the playing field between boroughs.
+
+---
+
 ## Suggested Visualizations
 
 These directly answer the analytical question and make a strong dashboard:
@@ -118,7 +149,7 @@ These directly answer the analytical question and make a strong dashboard:
 ### 1. Demand Impact: Adverse vs. Clear Weather by Borough (bar chart or grouped bar)
 - X axis: PICKUP_BOROUGH
 - Color: IS_ADVERSE_WEATHER (TRUE/FALSE)
-- Value: SUM(TRIP_COUNT)
+- Value: Pct Demand Drop (normalized, see above) OR SUM(TRIP_COUNT) if you want raw scale
 - Shows which boroughs lose the most demand during bad weather
 
 ### 2. Year-over-Year Shift (side-by-side or line chart)
