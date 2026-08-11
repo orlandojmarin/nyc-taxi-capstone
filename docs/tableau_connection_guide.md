@@ -9,7 +9,7 @@ How to connect Tableau to the Gold layer data for our analytical question:
 
 Tableau Public (the free browser version) does not support direct Snowflake connections. To work around this, we export the data from Snowflake and upload it to Tableau Public.
 
-### Option A: Upload a CSV (simplest)
+### How to do it
 
 1. **Export the data from Snowflake:**
    - Log into Snowflake at https://app.snowflake.com
@@ -36,16 +36,6 @@ Tableau Public (the free browser version) does not support direct Snowflake conn
    - Columns like PICKUP_BOROUGH, WEATHER_CATEGORY, TRIP_COUNT, TOTAL_REVENUE, etc.
    - If columns look correct, click **Update Now** at the bottom to load all data
    - Then click the **Sheet 1** tab at the bottom to start building visualizations
-
-### Option B: Use Google Sheets as a connector
-
-If you want a live-ish connection that others can also access:
-
-1. Export the CSV from Snowflake (same steps as Option A, step 1)
-2. Upload the CSV to a Google Sheet (Google Drive > New > File upload, then open with Google Sheets)
-3. In Tableau Public web authoring, choose **Google Sheets** as your connector instead of file upload
-4. Select the sheet you just created
-5. This makes it easy for all team members to connect to the same data source
 
 ### After the data is loaded in Tableau Public:
 
