@@ -51,7 +51,7 @@ Step-by-step row counts showing exactly what happens to the data at each operati
 
 ### Step 1: Create external stage and file format
 
-**File:** `orlando/01_bronze_load.sql` (Sections 1-2)
+**File:** `pipeline/01_bronze_load.sql` (Sections 1-2)
 
 Created a Parquet file format (`capstone_parquet_ff`) with `USE_LOGICAL_TYPE = TRUE` so timestamps come through correctly. Created an external stage (`capstone_raw_stage`) pointing at `s3://techcatalyst-de-2026/raw/` using the pre-configured `s3_int` storage integration.
 
@@ -59,7 +59,7 @@ Created a Parquet file format (`capstone_parquet_ff`) with `USE_LOGICAL_TYPE = T
 
 ### Step 2: Inspect schemas before loading
 
-**File:** `orlando/01_bronze_load.sql` (Section 4)
+**File:** `pipeline/01_bronze_load.sql` (Section 4)
 
 Used `INFER_SCHEMA` to read the Parquet column names and types from both Yellow and Green taxi files before creating any tables.
 
@@ -69,7 +69,7 @@ Used `INFER_SCHEMA` to read the Parquet column names and types from both Yellow 
 
 ### Step 3: Create Bronze tables and load data
 
-**File:** `orlando/01_bronze_load.sql` (Sections 5-6)
+**File:** `pipeline/01_bronze_load.sql` (Sections 5-6)
 
 - `yellow_raw`: created using `USING TEMPLATE` from inferred schema, loaded with `COPY INTO ... MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE`
 - `green_raw`: same approach
@@ -83,7 +83,7 @@ Used `INFER_SCHEMA` to read the Parquet column names and types from both Yellow 
 
 ### Step 4: Load weather enrichment
 
-**File:** `orlando/02_fetch_weather.py`
+**File:** `pipeline/02_fetch_weather.py`
 
 Python script that calls the Open-Meteo Historical Weather API for NYC Central Park (Jan 2025 through May 2026), transforms the response into a DataFrame with imperial units and human-readable descriptions, then loads directly into `AMO_BRONZE.WEATHER_HOURLY` via the Snowflake Python connector.
 
@@ -95,7 +95,7 @@ Python script that calls the Open-Meteo Historical Weather API for NYC Central P
 
 ### Step 5: Verify Bronze
 
-**File:** `orlando/03_bronze_verify.sql`
+**File:** `pipeline/03_bronze_verify.sql`
 
 Row counts for all four tables, date range checks, and sample queries to confirm data looks reasonable.
 
@@ -221,7 +221,7 @@ Clean dimension tables in GOLD schema for dashboard joins and drilldowns.
 
 ### Step 16: Build orchestration script
 
-**File:** `orchestrate.py` (project root)
+**File:** `pipeline/orchestrate.py`
 
 Single Python script that runs the entire pipeline end-to-end: Bronze infrastructure, S3 data load, weather API fetch, row count verification, dbt run (Silver + Gold), and dbt test.
 
@@ -238,7 +238,7 @@ Single Python script that runs the entire pipeline end-to-end: Bronze infrastruc
 
 **Usage:**
 ```bash
-python orchestrate.py
+python pipeline/orchestrate.py
 ```
 
 **Test run (Aug 11, 2026):** Completed successfully in 6.1 minutes. All 7 steps passed, 32 dbt tests passed (31 pass, 1 expected warn on undocumented payment_type values). Final row counts:

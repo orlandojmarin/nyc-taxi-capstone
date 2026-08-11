@@ -5,10 +5,10 @@ Run this single script to execute the entire pipeline end-to-end.
 It is idempotent: running it twice will not duplicate data.
 
 Usage:
-    python orchestrate.py
+    python pipeline/orchestrate.py
 
 Prerequisites:
-    - snow.cfg configured in orlando/ (never commit this file)
+    - snow.cfg configured in pipeline/ (never commit this file)
     - dbt profiles.yml configured at ~/.dbt/profiles.yml
     - Internet access (for Open-Meteo weather API)
 """
@@ -19,15 +19,15 @@ import time
 import logging
 from pathlib import Path
 
-# Add orlando/ to path so we can import the connection helper
-sys.path.insert(0, str(Path(__file__).parent / "orlando"))
+# snowflake_connect.py is in the same directory as this script
+sys.path.insert(0, str(Path(__file__).parent))
 from snowflake_connect import get_connection, run_sql
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 
-PROJECT_ROOT = Path(__file__).parent
+PROJECT_ROOT = Path(__file__).parent.parent
 DBT_PROJECT_DIR = PROJECT_ROOT / "dbt"
 
 # Expected row counts for validation (approximate minimums)

@@ -9,7 +9,7 @@ Prerequisites:
     pip install requests pandas snowflake-connector-python
 
 Usage:
-    python orlando/03_fetch_weather.py
+    python pipeline/02_fetch_weather.py
 """
 
 import time

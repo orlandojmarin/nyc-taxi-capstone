@@ -48,10 +48,13 @@ Tableau / Looker + Streamlit (stretch goal)
 
 | File | Purpose |
 | :--- | :--- |
-| `orlando/01_bronze_load.sql` | S3 external stage + COPY INTO for taxi and zone data |
-| `orlando/02_fetch_weather.py` | Fetches Open-Meteo API and loads directly into Snowflake Bronze |
-| `orlando/03_bronze_verify.sql` | Verifies all Bronze tables loaded correctly |
-| `orlando/04_silver_transform.sql` | Reference SQL for Bronze to Silver (manual version with DQ flags) |
+| `pipeline/orchestrate.py` | Single-command pipeline orchestration (runs everything end-to-end) |
+| `pipeline/snowflake_connect.py` | Python connection helper (reads snow.cfg) |
+| `pipeline/01_bronze_load.sql` | S3 external stage + COPY INTO for taxi and zone data |
+| `pipeline/02_fetch_weather.py` | Fetches Open-Meteo API and loads directly into Snowflake Bronze |
+| `pipeline/03_bronze_verify.sql` | Verifies all Bronze tables loaded correctly |
+| `pipeline/04_silver_transform.sql` | Reference SQL for Bronze to Silver (manual version with DQ flags) |
+| `pipeline/snow.cfg` | Snowflake credentials (gitignored, never committed) |
 | `dbt/models/staging/stg_trips.sql` | dbt staging model: union, derive, flag DQ issues |
 | `dbt/models/staging/stg_zones.sql` | dbt staging model: clean zone lookup |
 | `dbt/models/staging/stg_weather.sql` | dbt staging model: weather with categories |
@@ -59,21 +62,18 @@ Tableau / Looker + Streamlit (stretch goal)
 | `dbt/models/marts/mart_weather_demand.sql` | dbt mart: aggregated demand/revenue by borough, weather, time, payment |
 | `dbt/models/marts/dim_zones.sql` | dbt mart: zone dimension for dashboard joins |
 | `dbt/models/marts/dim_weather.sql` | dbt mart: weather dimension for dashboard drilldown |
-| `orlando/snowflake_connect.py` | Python connection helper (reads snow.cfg) |
-| `orlando/snow.cfg` | Snowflake credentials (gitignored, never committed) |
-| `orchestrate.py` | Single-command pipeline orchestration (runs everything end-to-end) |
 
 **Run order (orchestrated):**
 ```bash
-python orchestrate.py
+python pipeline/orchestrate.py
 ```
 
 This single script executes all steps in order: Bronze infrastructure, data load, weather fetch, verification, dbt run (Silver + Gold), and dbt test. It is idempotent (safe to re-run) and fails fast with clear error messages.
 
 **Manual run order (if needed):**
-1. `01_bronze_load.sql` in Snowflake worksheet
-2. `python orlando/02_fetch_weather.py` from terminal
-3. `03_bronze_verify.sql` in Snowflake worksheet (confirm all 4 tables)
+1. `pipeline/01_bronze_load.sql` in Snowflake worksheet
+2. `python pipeline/02_fetch_weather.py` from terminal
+3. `pipeline/03_bronze_verify.sql` in Snowflake worksheet (confirm all 4 tables)
 4. `cd dbt && dbt run` (builds Silver + Gold layers)
 5. `dbt test` (validates all models with automated checks)
 
