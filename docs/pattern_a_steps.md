@@ -4,6 +4,35 @@ What was done at each stage, why, and how to reproduce it. Issues encountered an
 
 ---
 
+## Row Count Summary
+
+How data flows through each layer, and what gets filtered at each step.
+
+| Layer | Table | Rows | Notes |
+| :--- | :--- | ---: | :--- |
+| **Source** | S3 yellow taxi (10 files) | 38,759,706 | Raw Parquet from TLC |
+| **Source** | S3 green taxi (10 files) | 465,029 | Raw Parquet from TLC |
+| **Source** | S3 zone lookup | 265 | CSV reference table |
+| **Source** | Open-Meteo API | 7,248 | Hourly weather, Jan-May 2025+2026 |
+| **Bronze** | AMO_BRONZE.YELLOW_RAW | 38,759,706 | 1:1 copy from S3, zero rows lost |
+| **Bronze** | AMO_BRONZE.GREEN_RAW | 465,029 | 1:1 copy from S3, zero rows lost |
+| **Bronze** | AMO_BRONZE.ZONE_LOOKUP | 265 | 1:1 copy from S3 |
+| **Bronze** | AMO_BRONZE.WEATHER_HOURLY | 7,248 | Loaded via Python connector |
+| **Silver** | AMO_SILVER.STG_TRIPS | 39,224,735 | Union of yellow + green (38,759,706 + 465,029). DQ flags added but no rows removed. |
+| **Silver** | AMO_SILVER.STG_ZONES | 265 | Cleaned column names |
+| **Silver** | AMO_SILVER.STG_WEATHER | 7,248 | Added weather_category and is_adverse_weather |
+| **Gold** | AMO_GOLD.FCT_TRIPS | 38,053,445 | Filtered to IS_VALID = TRUE. ~1,171,290 flagged rows excluded. Enriched with borough + weather. |
+| **Gold** | AMO_GOLD.MART_WEATHER_DEMAND | 34,719 | Pre-aggregated for dashboards. Excludes Unknown/N/A boroughs (~75K trips). |
+| **Gold** | AMO_GOLD.DIM_ZONES | 265 | Zone dimension for joins |
+| **Gold** | AMO_GOLD.DIM_WEATHER | 7,248 | Weather dimension for drilldowns |
+
+**Key filters applied:**
+- Bronze to Silver: none (all rows preserved, DQ issues flagged with is_valid + dq_flag_reason)
+- Silver to Gold (fct_trips): `IS_VALID = TRUE` removes ~1.17M trips with negative fares, impossible timestamps, distance over 100 miles, or dropoff before pickup
+- fct_trips to mart_weather_demand: excludes pickup_borough of 'Unknown' or 'N/A' (zone IDs 264/265 that cannot be attributed to a real NYC borough)
+
+---
+
 ## Bronze Layer (S3 RAW to Snowflake BRONZE)
 
 ### Step 1: Create external stage and file format
