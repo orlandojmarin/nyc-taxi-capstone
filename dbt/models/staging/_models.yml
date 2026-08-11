@@ -1,0 +1,79 @@
+version: 2
+
+models:
+  - name: stg_trips
+    description: >
+      Yellow and Green trips unioned into one grain with derived time columns
+      and data quality flags. One row per trip.
+    columns:
+      - name: taxi_type
+        description: yellow or green
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['yellow', 'green']
+
+      - name: pickup_at
+        tests:
+          - not_null
+
+      - name: dropoff_at
+        tests:
+          - not_null
+
+      - name: payment_type
+        quote: true
+        tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5, 6]
+              config:
+                severity: warn
+
+      - name: pickup_zone_id
+        tests:
+          - relationships:
+              arguments:
+                to: source('bronze', 'zone_lookup')
+                field: LocationID
+              config:
+                severity: warn
+
+      - name: is_valid
+        description: FALSE if any data quality check failed for this row.
+        tests:
+          - not_null
+
+      - name: trip_duration_minutes
+        description: Dropoff minus pickup in minutes. Negative values indicate bad timestamps.
+
+  - name: stg_zones
+    description: Clean zone lookup with renamed columns.
+    columns:
+      - name: location_id
+        tests:
+          - unique
+          - not_null
+
+      - name: borough
+        tests:
+          - not_null
+
+  - name: stg_weather
+    description: Hourly weather with derived category and adverse weather flag.
+    columns:
+      - name: weather_date
+        tests:
+          - not_null
+
+      - name: weather_hour
+        tests:
+          - not_null
+
+      - name: weather_category
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Clear', 'Cloudy', 'Fog', 'Drizzle', 'Rain', 'Snow', 'Rain Showers', 'Snow Showers', 'Thunderstorm', 'Other']
