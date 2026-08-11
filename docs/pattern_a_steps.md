@@ -4,17 +4,17 @@ What was done at each stage, why, and how to reproduce it. Issues encountered an
 
 ---
 
-## Pattern A: Pros and Cons
+## Pattern A: Pros and Impact
 
-| Pros | Cons |
+| Pros | Impact |
 | :--- | :--- |
-| Single environment for all transforms (Snowflake + dbt), so debugging happens in one place | All compute burns Snowflake credits, no way to offload heavy processing |
-| Every transformation is tested and version-controlled through dbt | Demonstrates fewer tools overall (no Glue, no Spark, no DataFrame work) |
-| Snowflake handles 39M rows natively with no memory management on our end | If the raw data had complex nested structures or binary blobs, SQL would struggle |
-| Full pipeline re-runs in ~6 minutes, fast iteration during development | No intermediate conformed S3 layer that other non-Snowflake consumers could reuse |
-| No intermediate storage layer to manage (no S3 conformed zone, no partitioning decisions) | All downstream consumers must go through Snowflake |
-| Easier team collaboration since the whole team knows SQL | Row-level cleaning logic in SQL can be verbose compared to DataFrame operations |
-| Fewer moving parts means fewer failure modes during a one-week sprint | |
+| Single environment for all transforms (Snowflake + dbt), so debugging happens in one place | Faster incident resolution; one place to look when something breaks |
+| Every transformation is tested and version-controlled through dbt | Reproducible builds; any team member can re-run and get the same result |
+| Snowflake handles 39M rows natively with no memory management on our end | No out-of-memory failures, no chunking logic to maintain |
+| Full pipeline re-runs in ~6 minutes, fast iteration during development | Rapid feedback loop; we rebuilt the full pipeline dozens of times during the sprint |
+| No intermediate storage layer to manage (no S3 conformed zone, no partitioning decisions) | Lower operational cost; fewer AWS resources to monitor and pay for |
+| Easier team collaboration since the whole team knows SQL | All three members can read, review, and modify any model without context-switching |
+| Fewer moving parts means fewer failure modes during a one-week sprint | Higher delivery confidence within a tight deadline |
 
 ---
 
