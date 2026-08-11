@@ -5,11 +5,54 @@ How to connect Tableau to the Gold layer data for our analytical question:
 
 ---
 
-## Snowflake Connection Details
+## Step-by-Step: Connect Tableau Public to Snowflake
+
+Tableau Public (the free browser version) does not support direct Snowflake connections. To work around this, we export the data from Snowflake and upload it to Tableau Public.
+
+### How to do it
+
+1. **Export the data from Snowflake:**
+   - Log into Snowflake at https://app.snowflake.com
+   - Use your normal username and password
+   - Make sure your role is set to **DE** (top-left dropdown, or run `USE ROLE DE;`)
+   - Open a new SQL Worksheet
+   - Paste and run this query:
+     ```sql
+     SELECT * FROM TECHCATALYST.AMO_GOLD.MART_WEATHER_DEMAND;
+     ```
+   - In the results pane, click the **Download** button (down arrow icon, top-right of the results)
+   - Choose **Download as CSV**
+   - Save the file somewhere you can find it (e.g., Downloads folder)
+
+2. **Upload to Tableau Public:**
+   - Go to https://public.tableau.com and sign in (create a free account if you don't have one)
+   - Click **Create** (top nav) then **Web Authoring**
+   - On the Connect screen, under "Files", click **Upload from computer**
+   - Select the CSV file you just downloaded
+   - Tableau will load the data and show you a preview
+
+3. **Verify the data loaded:**
+   - You should see 34,719 rows
+   - Columns like PICKUP_BOROUGH, WEATHER_CATEGORY, TRIP_COUNT, TOTAL_REVENUE, etc.
+   - If columns look correct, click **Update Now** at the bottom to load all data
+   - Then click the **Sheet 1** tab at the bottom to start building visualizations
+
+### After the data is loaded in Tableau Public:
+
+- **Dimensions** (drag to Rows/Columns/Filters): PICKUP_BOROUGH, WEATHER_CATEGORY, IS_ADVERSE_WEATHER, PICKUP_YEAR, PICKUP_MONTH, PICKUP_HOUR, PAYMENT_TYPE, IS_RUSH_HOUR, IS_NIGHT, IS_WEEKEND
+- **Measures** (drag to values): TRIP_COUNT, TOTAL_REVENUE, TOTAL_FARES, TOTAL_TIPS, AVG_FARE_TOTAL, AVG_TIP, AVG_DURATION_MINUTES, AVG_DISTANCE
+- Some columns like PICKUP_YEAR and PICKUP_MONTH may import as measures (numbers). Right-click them and select "Convert to Dimension" so they behave as categories, not values to sum.
+
+---
+
+## Snowflake Connection Details (for reference)
+
+These are the Snowflake details if you need to log in and run queries or export data:
 
 | Setting | Value |
 | :--- | :--- |
-| Server | FFOJZFH-WPA36811.snowflakecomputing.com |
+| Snowflake URL | https://app.snowflake.com |
+| Account | FFOJZFH-WPA36811 |
 | Role | DE |
 | Warehouse | COMPUTE_WH |
 | Database | TECHCATALYST |
