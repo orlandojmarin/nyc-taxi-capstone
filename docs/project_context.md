@@ -196,10 +196,25 @@ This single script executes all steps in order: Bronze infrastructure, data load
 - [x] Orchestration script built and tested (orchestrate.py, 6.1 min end-to-end)
 - [x] Data Quality Incident Report written (8 defects documented, including 2 not in catalog)
 - [x] Tableau connection guide created for team
-- [ ] Team decision: Pattern A or B
+- [x] Team decision: Pattern A selected (Aug 11)
+- [x] Presentation redesigned on Hartford template with colored content cards (24 slides)
 - [ ] Document all decisions in team charter/decision log
-- [ ] Connect Tableau to AMO_GOLD.MART_WEATHER_DEMAND
+- [ ] Connect Tableau to AMO_GOLD.MART_WEATHER_DEMAND (Maryam working on this)
+- [ ] BigQuery ML (Ariana working on this)
 - [ ] Streamlit app (stretch goal)
+
+### Current Work Assignments (Aug 11)
+- **Maryam:** Tableau dashboard connected to AMO_GOLD.MART_WEATHER_DEMAND
+- **Orlando:** Presentation (slides, content, formatting)
+- **Ariana:** BigQuery ML
+
+### Team Exploration Path
+Before selecting Pattern A, the team explored multiple approaches:
+1. Ariana and Maryam initially investigated construction data as a potential enrichment source
+2. Ariana and Maryam then collaborated on Pattern B (ETL with AWS Glue/Spark for Silver layer cleaning)
+3. Orlando built and tested Pattern A (ELT, warehouse-centric with dbt)
+4. Team decided Pattern A was the strongest path given timeline and reliability
+All exploratory work informed the final architecture decision and is acknowledged in the presentation.
 
 ## Cut Order (if behind)
 
