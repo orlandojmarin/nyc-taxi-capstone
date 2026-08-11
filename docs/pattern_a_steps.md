@@ -198,7 +198,21 @@ Single Python script that runs the entire pipeline end-to-end: Bronze infrastruc
 python orchestrate.py
 ```
 
-**Result:** Full pipeline executes in a single command with row count reconciliation and validation at every layer.
+**Test run (Aug 11, 2026):** Completed successfully in 6.1 minutes. All 7 steps passed, 32 dbt tests passed (31 pass, 1 expected warn on undocumented payment_type values). Final row counts:
+
+| Layer | Table | Rows |
+| :--- | :--- | :--- |
+| Bronze | YELLOW_RAW | 38,759,706 |
+| Bronze | GREEN_RAW | 465,029 |
+| Bronze | ZONE_LOOKUP | 265 |
+| Bronze | WEATHER_HOURLY | 7,248 |
+| Silver | STG_TRIPS | 39,224,735 |
+| Silver | STG_ZONES | 265 |
+| Silver | STG_WEATHER | 7,248 |
+| Gold | FCT_TRIPS | 38,053,445 |
+| Gold | MART_WEATHER_DEMAND | 42,582 |
+| Gold | DIM_ZONES | 265 |
+| Gold | DIM_WEATHER | 7,248 |
 
 ---
 
