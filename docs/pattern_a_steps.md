@@ -6,30 +6,30 @@ What was done at each stage, why, and how to reproduce it. Issues encountered an
 
 ## Row Count Summary
 
-How data flows through each layer, and what gets filtered at each step.
+Step-by-step row counts showing exactly what happens to the data at each operation.
 
-| Layer | Table | Rows | Notes |
-| :--- | :--- | ---: | :--- |
-| **Source** | S3 yellow taxi (10 files) | 38,759,706 | Raw Parquet from TLC |
-| **Source** | S3 green taxi (10 files) | 465,029 | Raw Parquet from TLC |
-| **Source** | S3 zone lookup | 265 | CSV reference table |
-| **Source** | Open-Meteo API | 7,248 | Hourly weather, Jan-May 2025+2026 |
-| **Bronze** | AMO_BRONZE.YELLOW_RAW | 38,759,706 | 1:1 copy from S3, zero rows lost |
-| **Bronze** | AMO_BRONZE.GREEN_RAW | 465,029 | 1:1 copy from S3, zero rows lost |
-| **Bronze** | AMO_BRONZE.ZONE_LOOKUP | 265 | 1:1 copy from S3 |
-| **Bronze** | AMO_BRONZE.WEATHER_HOURLY | 7,248 | Loaded via Python connector |
-| **Silver** | AMO_SILVER.STG_TRIPS | 39,224,735 | Union of yellow + green (38,759,706 + 465,029). DQ flags added but no rows removed. |
-| **Silver** | AMO_SILVER.STG_ZONES | 265 | Cleaned column names |
-| **Silver** | AMO_SILVER.STG_WEATHER | 7,248 | Added weather_category and is_adverse_weather |
-| **Gold** | AMO_GOLD.FCT_TRIPS | 38,053,445 | Filtered to IS_VALID = TRUE. ~1,171,290 flagged rows excluded. Enriched with borough + weather. |
-| **Gold** | AMO_GOLD.MART_WEATHER_DEMAND | 34,719 | Pre-aggregated for dashboards. Excludes Unknown/N/A boroughs (~75K trips). |
-| **Gold** | AMO_GOLD.DIM_ZONES | 265 | Zone dimension for joins |
-| **Gold** | AMO_GOLD.DIM_WEATHER | 7,248 | Weather dimension for drilldowns |
+| Step | Operation | Rows In | Rows Out | Rows Changed | What Happened |
+| :--- | :--- | ---: | ---: | ---: | :--- |
+| 1 | Load yellow taxi from S3 | 38,759,706 | 38,759,706 | 0 lost | COPY INTO AMO_BRONZE.YELLOW_RAW |
+| 2 | Load green taxi from S3 | 465,029 | 465,029 | 0 lost | COPY INTO AMO_BRONZE.GREEN_RAW |
+| 3 | Load zone lookup from S3 | 265 | 265 | 0 lost | COPY INTO AMO_BRONZE.ZONE_LOOKUP |
+| 4 | Fetch weather from API | 7,248 | 7,248 | 0 lost | Python loads into AMO_BRONZE.WEATHER_HOURLY |
+| 5 | Union yellow + green | 38,759,706 + 465,029 | 39,224,735 | 0 lost | stg_trips combines both into one table, adds taxi_type column |
+| 6 | Add DQ flags | 39,224,735 | 39,224,735 | 0 removed | is_valid + dq_flag_reason added. 1,171,290 rows flagged invalid but kept. |
+| 7 | Derive time columns | 39,224,735 | 39,224,735 | 0 removed | pickup_year, pickup_month, pickup_hour, is_night, is_weekend, is_rush_hour added |
+| 8 | Clean zones | 265 | 265 | 0 lost | stg_zones renames columns to snake_case |
+| 9 | Enrich weather | 7,248 | 7,248 | 0 lost | stg_weather adds weather_category + is_adverse_weather |
+| 10 | Filter to valid trips | 39,224,735 | 38,053,445 | -1,171,290 | fct_trips keeps only IS_VALID = TRUE |
+| 11 | Join borough names | 38,053,445 | 38,053,445 | 0 lost | Left join to stg_zones for pickup/dropoff borough |
+| 12 | Join weather | 38,053,445 | 38,053,445 | 0 lost | Left join to stg_weather on date + hour (100% match rate) |
+| 13 | Exclude non-borough zones | 38,053,445 | 37,978,039 | -75,406 | mart_weather_demand removes Unknown/N/A (zone IDs 264/265) |
+| 14 | Aggregate for dashboard | 37,978,039 | 34,719 | grouped | Group by borough, weather, year, month, hour, rush/night/weekend, payment_type |
 
-**Key filters applied:**
-- Bronze to Silver: none (all rows preserved, DQ issues flagged with is_valid + dq_flag_reason)
-- Silver to Gold (fct_trips): `IS_VALID = TRUE` removes ~1.17M trips with negative fares, impossible timestamps, distance over 100 miles, or dropoff before pickup
-- fct_trips to mart_weather_demand: excludes pickup_borough of 'Unknown' or 'N/A' (zone IDs 264/265 that cannot be attributed to a real NYC borough)
+**Summary:**
+- Source to Bronze: 0 rows lost (perfect 1:1 load)
+- Bronze to Silver: 0 rows removed (DQ issues flagged, not deleted)
+- Silver to Gold: 1,171,290 invalid rows filtered (3.0% of total)
+- Gold fact to Gold mart: 75,406 non-borough trips excluded (0.2% of valid trips), then aggregated to 34,719 rows
 
 ---
 
