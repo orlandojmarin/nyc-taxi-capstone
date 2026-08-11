@@ -2,26 +2,21 @@
 -- Pattern A: Silver Transform (Snowflake BRONZE -> Snowflake SILVER)
 -- Capstone - Orlando
 --
--- This is the manual SQL version of what dbt will do.
--- Use this to test and validate the logic in a worksheet.
--- Once confirmed, port it into your dbt staging models.
+-- REFERENCE ONLY. The production Silver layer is built by dbt.
+-- This file documents the logic and can be run manually in a
+-- Snowflake worksheet for testing or debugging.
 -- ============================================================
 
 USE ROLE DE;
 USE WAREHOUSE COMPUTE_WH;
 USE DATABASE TECHCATALYST;
 
--- Create the SILVER schema (this maps to dbt's "staging" layer)
 CREATE SCHEMA IF NOT EXISTS TECHCATALYST.SILVER;
 USE SCHEMA SILVER;
 
 -- ============================================================
--- SECTION 1: Union Yellow + Green into a single trips table
+-- SECTION 1: stg_trips (union Yellow + Green, derive columns, flag DQ)
 -- ============================================================
-
--- This unions both taxi types, renames timestamps to common names,
--- adds a taxi_type column, and computes derived time columns.
--- It does NOT filter bad records. That decision comes next.
 
 CREATE OR REPLACE TABLE stg_trips AS
 
@@ -85,26 +80,51 @@ combined AS (
     SELECT * FROM yellow
     UNION ALL
     SELECT * FROM green
+),
+
+with_derived AS (
+    SELECT
+        *,
+        DATEDIFF('minute', pickup_at, dropoff_at)   AS trip_duration_minutes,
+        YEAR(pickup_at)                             AS pickup_year,
+        MONTH(pickup_at)                            AS pickup_month,
+        DAYOFWEEK(pickup_at)                        AS pickup_dayofweek,
+        HOUR(pickup_at)                             AS pickup_hour,
+        CASE WHEN HOUR(pickup_at) >= 20 OR HOUR(pickup_at) < 6 THEN TRUE ELSE FALSE END AS is_night,
+        CASE WHEN DAYOFWEEK(pickup_at) IN (0, 6) THEN TRUE ELSE FALSE END AS is_weekend,
+        CASE
+            WHEN DAYOFWEEK(pickup_at) NOT IN (0, 6)
+             AND (HOUR(pickup_at) BETWEEN 7 AND 8 OR HOUR(pickup_at) BETWEEN 17 AND 18)
+            THEN TRUE ELSE FALSE
+        END AS is_rush_hour
+    FROM combined
 )
 
 SELECT
     *,
-    DATEDIFF('minute', pickup_at, dropoff_at)   AS trip_duration_minutes,
-    YEAR(pickup_at)                             AS pickup_year,
-    MONTH(pickup_at)                            AS pickup_month,
-    DAYOFWEEK(pickup_at)                        AS pickup_dayofweek,
-    HOUR(pickup_at)                             AS pickup_hour,
-    CASE WHEN HOUR(pickup_at) >= 20 OR HOUR(pickup_at) < 6 THEN TRUE ELSE FALSE END AS is_night,
-    CASE WHEN DAYOFWEEK(pickup_at) IN (0, 6) THEN TRUE ELSE FALSE END AS is_weekend,
     CASE
-        WHEN DAYOFWEEK(pickup_at) NOT IN (0, 6)
-         AND (HOUR(pickup_at) BETWEEN 7 AND 8 OR HOUR(pickup_at) BETWEEN 17 AND 18)
-        THEN TRUE ELSE FALSE
-    END AS is_rush_hour
-FROM combined;
+        WHEN trip_duration_minutes < 0 THEN FALSE
+        WHEN fare_amount < 0 THEN FALSE
+        WHEN total_amount < 0 THEN FALSE
+        WHEN trip_distance < 0 THEN FALSE
+        WHEN trip_distance > 100 THEN FALSE
+        WHEN pickup_year NOT IN (2025, 2026) THEN FALSE
+        WHEN pickup_month NOT BETWEEN 1 AND 5 THEN FALSE
+        ELSE TRUE
+    END AS is_valid,
+    ARRAY_TO_STRING(ARRAY_CONSTRUCT_COMPACT(
+        CASE WHEN trip_duration_minutes < 0 THEN 'dropoff_before_pickup' END,
+        CASE WHEN fare_amount < 0 THEN 'negative_fare' END,
+        CASE WHEN total_amount < 0 THEN 'negative_total' END,
+        CASE WHEN trip_distance < 0 THEN 'negative_distance' END,
+        CASE WHEN trip_distance > 100 THEN 'extreme_distance' END,
+        CASE WHEN pickup_year NOT IN (2025, 2026) THEN 'out_of_range_year' END,
+        CASE WHEN pickup_month NOT BETWEEN 1 AND 5 THEN 'out_of_range_month' END
+    ), ', ') AS dq_flag_reason
+FROM with_derived;
 
 -- ============================================================
--- SECTION 2: Zone lookup (clean copy in silver)
+-- SECTION 2: stg_zones (clean copy in Silver)
 -- ============================================================
 
 CREATE OR REPLACE TABLE stg_zones AS
@@ -116,49 +136,7 @@ SELECT
 FROM TECHCATALYST.BRONZE.zone_lookup;
 
 -- ============================================================
--- SECTION 3: Verify Silver layer
--- ============================================================
-
--- Total row count (should equal yellow_raw + green_raw exactly)
-SELECT COUNT(*) AS silver_total_rows FROM stg_trips;
-
--- Verify by taxi type
-SELECT taxi_type, COUNT(*) AS row_count
-FROM stg_trips
-GROUP BY taxi_type;
-
--- Verify row count reconciliation (this number matters for your DQ report)
-SELECT
-    (SELECT COUNT(*) FROM TECHCATALYST.BRONZE.yellow_raw) AS bronze_yellow,
-    (SELECT COUNT(*) FROM TECHCATALYST.BRONZE.green_raw) AS bronze_green,
-    (SELECT COUNT(*) FROM stg_trips) AS silver_total,
-    (SELECT COUNT(*) FROM TECHCATALYST.BRONZE.yellow_raw) +
-    (SELECT COUNT(*) FROM TECHCATALYST.BRONZE.green_raw) AS expected_total,
-    (SELECT COUNT(*) FROM stg_trips) -
-    ((SELECT COUNT(*) FROM TECHCATALYST.BRONZE.yellow_raw) +
-     (SELECT COUNT(*) FROM TECHCATALYST.BRONZE.green_raw)) AS difference;
-
--- Verify derived columns are sensible
-SELECT
-    pickup_year,
-    pickup_month,
-    COUNT(*) AS trips
-FROM stg_trips
-GROUP BY pickup_year, pickup_month
-ORDER BY pickup_year, pickup_month;
-
--- Check for timestamps outside expected range (data quality issue to document)
-SELECT COUNT(*) AS out_of_range_timestamps
-FROM stg_trips
-WHERE pickup_year NOT IN (2025, 2026)
-   OR pickup_month NOT BETWEEN 1 AND 6;
-
--- Zone lookup verification
-SELECT COUNT(*) AS zone_count FROM stg_zones;
-SELECT * FROM stg_zones WHERE location_id IN (264, 265);
-
--- ============================================================
--- SECTION 4: Weather (Bronze -> Silver)
+-- SECTION 3: stg_weather (Bronze -> Silver with derived categories)
 -- ============================================================
 
 CREATE OR REPLACE TABLE stg_weather AS
@@ -196,42 +174,58 @@ SELECT
     END AS is_adverse_weather
 FROM TECHCATALYST.BRONZE.WEATHER_HOURLY;
 
--- Verify weather silver
+-- ============================================================
+-- SECTION 4: Verification queries
+-- ============================================================
+
+SELECT COUNT(*) AS silver_total_rows FROM stg_trips;
+
+SELECT taxi_type, COUNT(*) AS row_count
+FROM stg_trips
+GROUP BY taxi_type;
+
+SELECT
+    (SELECT COUNT(*) FROM TECHCATALYST.BRONZE.yellow_raw) AS bronze_yellow,
+    (SELECT COUNT(*) FROM TECHCATALYST.BRONZE.green_raw) AS bronze_green,
+    (SELECT COUNT(*) FROM stg_trips) AS silver_total,
+    (SELECT COUNT(*) FROM TECHCATALYST.BRONZE.yellow_raw) +
+    (SELECT COUNT(*) FROM TECHCATALYST.BRONZE.green_raw) AS expected_total,
+    (SELECT COUNT(*) FROM stg_trips) -
+    ((SELECT COUNT(*) FROM TECHCATALYST.BRONZE.yellow_raw) +
+     (SELECT COUNT(*) FROM TECHCATALYST.BRONZE.green_raw)) AS difference;
+
+SELECT pickup_year, pickup_month, COUNT(*) AS trips
+FROM stg_trips
+GROUP BY pickup_year, pickup_month
+ORDER BY pickup_year, pickup_month;
+
+SELECT COUNT(*) AS zone_count FROM stg_zones;
 SELECT COUNT(*) AS silver_weather_rows FROM stg_weather;
 
-SELECT weather_category, COUNT(*) AS hours, ROUND(AVG(TEMPERATURE_F), 1) AS avg_temp
-FROM stg_weather
-GROUP BY weather_category
-ORDER BY hours DESC;
-
 -- ============================================================
--- SECTION 5: Quick data quality preview (for your DQ report)
+-- SECTION 5: Data quality summary (for DQ report)
 -- ============================================================
 
--- Negative fares
-SELECT COUNT(*) AS negative_fares
-FROM stg_trips WHERE fare_amount < 0;
+SELECT is_valid, COUNT(*) AS row_count,
+       ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER(), 2) AS pct
+FROM stg_trips
+GROUP BY is_valid;
 
--- Zero-distance trips with substantial fare
-SELECT COUNT(*) AS zero_dist_with_fare
-FROM stg_trips WHERE trip_distance = 0 AND fare_amount > 5;
+SELECT dq_flag_reason, COUNT(*) AS row_count
+FROM stg_trips
+WHERE NOT is_valid
+GROUP BY dq_flag_reason
+ORDER BY row_count DESC
+LIMIT 20;
 
--- Dropoff before pickup
-SELECT COUNT(*) AS dropoff_before_pickup
-FROM stg_trips WHERE trip_duration_minutes < 0;
-
--- Zero passenger count or NULL
 SELECT COUNT(*) AS zero_or_null_passengers
 FROM stg_trips WHERE passenger_count IS NULL OR passenger_count = 0;
 
--- Very long trips (over 4 hours)
 SELECT COUNT(*) AS very_long_trips
 FROM stg_trips WHERE trip_duration_minutes > 240;
 
--- Very short trips (under 1 minute)
 SELECT COUNT(*) AS very_short_trips
 FROM stg_trips WHERE trip_duration_minutes < 1 AND trip_duration_minutes >= 0;
 
--- Trips with distance > 100 miles
-SELECT COUNT(*) AS extreme_distance
-FROM stg_trips WHERE trip_distance > 100;
+SELECT COUNT(*) AS zero_dist_with_fare
+FROM stg_trips WHERE trip_distance = 0 AND fare_amount > 5;

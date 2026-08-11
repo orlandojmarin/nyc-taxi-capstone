@@ -1,0 +1,30 @@
+version: 2
+
+sources:
+  - name: bronze
+    database: TECHCATALYST
+    schema: BRONZE
+    description: Raw taxi trip records loaded from the capstone S3 bucket, untransformed.
+
+    tables:
+      - name: yellow_raw
+        description: Yellow taxi trips, Jan-May 2025 and Jan-May 2026.
+        columns:
+          - name: tpep_pickup_datetime
+            description: Meter engaged. Some values fall outside the source file's month.
+          - name: payment_type
+            description: See data catalog. Cash tips are not recorded.
+
+      - name: green_raw
+        description: Green taxi trips, same months. Uses lpep_ timestamps, adds ehail_fee and trip_type, no airport_fee.
+
+      - name: zone_lookup
+        description: LocationID to borough and zone name. IDs 264 and 265 are catch-alls.
+        columns:
+          - name: LocationID
+            tests:
+              - unique
+              - not_null
+
+      - name: weather_hourly
+        description: Hourly weather observations for NYC from Open-Meteo API.

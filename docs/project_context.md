@@ -9,7 +9,7 @@
 
 ## Project Summary
 
-We are a three-person data consultancy building a working data platform on top of 2.5 years of NYC taxi trip records (Yellow and Green, Jan-May 2025 and Jan-May 2026) from a raw S3 bucket. We choose the analytical question, choose the architecture, and defend both.
+We are a three-person data consultancy building a working data platform on top of 10 months of NYC taxi trip records (Yellow and Green, Jan-May 2025 and Jan-May 2026) from a raw S3 bucket. We choose the analytical question, choose the architecture, and defend both.
 
 ## Data Source
 
@@ -47,7 +47,10 @@ Tableau / Looker + Streamlit (stretch goal)
 | `orlando/01_bronze_load.sql` | S3 external stage + COPY INTO for taxi and zone data |
 | `orlando/02_fetch_weather.py` | Fetches Open-Meteo API and loads directly into Snowflake Bronze |
 | `orlando/03_bronze_verify.sql` | Verifies all Bronze tables loaded correctly |
-| `orlando/04_silver_transform.sql` | All Bronze to Silver transforms (trips, zones, weather) |
+| `orlando/04_silver_transform.sql` | Reference SQL for Bronze to Silver (manual version with DQ flags) |
+| `dbt/models/staging/stg_trips.sql` | dbt staging model: union, derive, flag DQ issues |
+| `dbt/models/staging/stg_zones.sql` | dbt staging model: clean zone lookup |
+| `dbt/models/staging/stg_weather.sql` | dbt staging model: weather with categories |
 | `orlando/snowflake_connect.py` | Python connection helper (reads snow.cfg) |
 | `orlando/snow.cfg` | Snowflake credentials (gitignored, never committed) |
 
@@ -55,7 +58,8 @@ Tableau / Looker + Streamlit (stretch goal)
 1. `01_bronze_load.sql` in Snowflake worksheet
 2. `python orlando/02_fetch_weather.py` from terminal
 3. `03_bronze_verify.sql` in Snowflake worksheet (confirm all 4 tables)
-4. `04_silver_transform.sql` in Snowflake worksheet
+4. `cd dbt && dbt run` (builds Silver layer: stg_trips, stg_zones, stg_weather)
+5. `dbt test` (validates Silver layer with automated checks)
 
 ## Stretch Goals
 
@@ -145,9 +149,10 @@ Tableau / Looker + Streamlit (stretch goal)
 - [x] Architecture pattern chosen: Pattern A (ELT, warehouse-centric)
 - [x] Weather enrichment approach: Open-Meteo API loaded via Python connector
 - [x] Bronze layer complete (Aug 10): 38.8M yellow, 465K green, 265 zones, 7,248 weather hours
+- [x] Silver layer complete (Aug 11): dbt project with stg_trips (39.2M rows), stg_zones (265), stg_weather (7,248). DQ flags added. 16 tests (15 pass, 1 warn on payment_type).
+- [x] Why models are tables vs views: staging models are tables (39M rows, too expensive to rebuild on every query as views; dashboard and Gold models read Silver repeatedly)
 - [ ] Analytical question chosen:
 - [ ] How we handled each data defect
-- [ ] Why models are tables vs views
 - [ ] Warehouse size and auto-suspend settings
 - [ ] What we cut if behind schedule
 
@@ -162,12 +167,15 @@ Tableau / Looker + Streamlit (stretch goal)
 - [x] Collaborators added (Maryam accepted, Ariana invitation pending)
 - Note: Column names from INFER_SCHEMA are case-sensitive (must use double quotes)
 
-### Tuesday (Aug 11) - PLAN
-- [ ] Complete Silver layer (run 04_silver_transform.sql, fix any column name issues)
+### Tuesday (Aug 11) - IN PROGRESS
+- [x] dbt Core installed and configured (dbt-snowflake 1.12.0, profiles.yml connected)
+- [x] Silver layer complete via dbt: stg_trips (39,224,735 rows), stg_zones (265), stg_weather (7,248)
+- [x] Data quality flags added: is_valid + dq_flag_reason columns on stg_trips
+- [x] dbt tests passing (15 pass, 1 expected warn on undocumented payment_type values)
 - [ ] Team decision: Pattern A or B (ideally by noon)
 - [ ] Decide analytical question (shapes the entire Gold layer)
 - [ ] Document all decisions in team charter/decision log
-- [ ] Complete Gold layer with dbt (setup, staging models, mart models, tests)
+- [ ] Complete Gold layer with dbt (mart models and tests)
 - [ ] Begin Streamlit app and/or orchestration script (stretch, if time permits)
 
 ## Cut Order (if behind)
