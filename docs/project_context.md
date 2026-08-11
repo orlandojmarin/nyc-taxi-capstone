@@ -190,7 +190,7 @@ This single script executes all steps in order: Bronze infrastructure, data load
 - [x] Data quality flags added: is_valid + dq_flag_reason columns on stg_trips
 - [x] dbt tests passing (15 pass, 1 expected warn on undocumented payment_type values)
 - [x] Analytical question chosen: "How does adverse weather affect taxi demand across NYC boroughs, and how did those patterns shift between 2025 and 2026?"
-- [x] Gold layer complete: fct_trips (38,053,445 rows), mart_weather_demand (42,582), dim_zones (265), dim_weather (7,248)
+- [x] Gold layer complete: fct_trips (38,053,445 rows), mart_weather_demand (34,719), dim_zones (265), dim_weather (7,248)
 - [x] Gold tests all passing (16/16)
 - [x] dbt docs regenerated with full Bronze-Silver-Gold lineage
 - [ ] Team decision: Pattern A or B (ideally by noon)

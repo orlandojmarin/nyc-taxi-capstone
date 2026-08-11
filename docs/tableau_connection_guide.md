@@ -20,7 +20,7 @@ How to connect Tableau to the Gold layer data for our analytical question:
 
 ## Primary Data Source: MART_WEATHER_DEMAND
 
-This is the main table to use. It has 42,582 rows (pre-aggregated from 38M trips), so Tableau will query it instantly with no performance issues.
+This is the main table to use. It has 34,719 rows (pre-aggregated from 38M trips), so Tableau will query it instantly with no performance issues. Only trips attributable to a real NYC borough are included (Unknown/N/A zone IDs excluded).
 
 **Connect to:** `TECHCATALYST.AMO_GOLD.MART_WEATHER_DEMAND`
 
@@ -28,7 +28,7 @@ This is the main table to use. It has 42,582 rows (pre-aggregated from 38M trips
 
 | Column | Type | Description |
 | :--- | :--- | :--- |
-| `PICKUP_BOROUGH` | VARCHAR | NYC borough where the trip started (Manhattan, Brooklyn, Queens, Bronx, Staten Island, EWR) |
+| `PICKUP_BOROUGH` | VARCHAR | NYC borough where the trip started (Manhattan, Brooklyn, Queens, Bronx, Staten Island, EWR). Only real boroughs are included. |
 | `WEATHER_CATEGORY` | VARCHAR | Weather condition at time of pickup (Clear, Cloudy, Fog, Drizzle, Rain, Snow, Rain Showers, Snow Showers, Thunderstorm) |
 | `IS_ADVERSE_WEATHER` | BOOLEAN | TRUE when Rain, Snow, or high wind. Use this for simple good-weather vs. bad-weather comparisons |
 | `PICKUP_YEAR` | INT | 2025 or 2026. Use this for year-over-year comparisons |
@@ -120,4 +120,4 @@ GROUP BY 1, 2, 3
 ORDER BY 1, 2, 3;
 ```
 
-You should get about 24 rows (6 boroughs x 2 years x 2 weather conditions).
+You should get 24 rows (6 boroughs x 2 years x 2 weather conditions).

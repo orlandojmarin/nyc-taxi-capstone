@@ -26,8 +26,9 @@ Supporting analysis includes trip duration, revenue impact, and payment type bre
 
 - **Source:** `fct_trips`
 - **Grouped by:** pickup_borough, weather_category, is_adverse_weather, pickup_year, pickup_month, pickup_hour, is_rush_hour, is_night, is_weekend, payment_type
+- **Filter:** Excludes trips with pickup_borough of 'Unknown' or 'N/A' (zone IDs 264/265 that cannot be attributed to a real borough)
 - **Metrics:** trip_count, total_revenue, total_fares, total_tips, total_tolls, total_congestion_surcharge, total_cbd_fee, avg_fare_total, avg_tip, avg_duration_minutes, avg_distance
-- **Materialized as:** table (42,582 rows)
+- **Materialized as:** table (34,719 rows)
 - **Use:** This is what Tableau/Streamlit connects to. Pre-aggregated so dashboards are fast.
 
 ### dim_zones (dimension)
@@ -87,7 +88,7 @@ GROUP BY 1, 2, 3
 ORDER BY 1, 2, 3;
 ```
 
-For Tableau/Streamlit, connect directly to `AMO_GOLD.MART_WEATHER_DEMAND`. It's small (42K rows) and pre-aggregated, so dashboards are instant.
+For Tableau/Streamlit, connect directly to `AMO_GOLD.MART_WEATHER_DEMAND`. It's small (~35K rows) and pre-aggregated, so dashboards are instant. Only trips attributable to a real NYC borough are included (Unknown/N/A excluded).
 
 ---
 

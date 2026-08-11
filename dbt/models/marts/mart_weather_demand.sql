@@ -28,6 +28,7 @@ select
     avg(trip_distance)                  as avg_distance
 from trips
 where pickup_borough is not null
+  and pickup_borough not in ('Unknown', 'N/A')
 group by
     pickup_borough,
     weather_category,

@@ -148,13 +148,13 @@ Joins `stg_trips` (filtered to `IS_VALID = TRUE`) with `stg_zones` (for pickup a
 
 **File:** `dbt/models/marts/mart_weather_demand.sql`
 
-Aggregates fct_trips by: pickup_borough, weather_category, is_adverse_weather, pickup_year, pickup_month, pickup_hour, is_rush_hour, is_night, is_weekend, payment_type.
+Aggregates fct_trips by: pickup_borough, weather_category, is_adverse_weather, pickup_year, pickup_month, pickup_hour, is_rush_hour, is_night, is_weekend, payment_type. Excludes trips where pickup_borough is 'Unknown' or 'N/A' (zone IDs 264/265 that cannot be attributed to a real NYC borough).
 
 Metrics: trip_count, total_revenue, total_fares, total_tips, total_tolls, total_congestion_surcharge, total_cbd_fee, avg_fare_total, avg_tip, avg_duration_minutes, avg_distance.
 
-**Why:** Pre-aggregated table (42,582 rows) that Tableau/Streamlit can query instantly. Contains every dimension needed to answer the question: borough (where), weather (condition), year/month (when/YoY), and payment_type (revenue breakdown). Keeps the dashboard fast without hitting 38M rows on every chart.
+**Why:** Pre-aggregated table (34,719 rows) that Tableau/Streamlit can query instantly. Contains every dimension needed to answer the question: borough (where), weather (condition), year/month (when/YoY), and payment_type (revenue breakdown). Keeps the dashboard fast without hitting 38M rows on every chart. Excluding Unknown/N/A is a defensible DQ decision: our question is about NYC boroughs, so trips that cannot be attributed to one are excluded rather than grouped into a misleading category.
 
-**Result:** 42,582 rows.
+**Result:** 34,719 rows.
 
 ### Step 14: Build dim_zones and dim_weather
 
@@ -210,7 +210,7 @@ python orchestrate.py
 | Silver | STG_ZONES | 265 |
 | Silver | STG_WEATHER | 7,248 |
 | Gold | FCT_TRIPS | 38,053,445 |
-| Gold | MART_WEATHER_DEMAND | 42,582 |
+| Gold | MART_WEATHER_DEMAND | 34,719 |
 | Gold | DIM_ZONES | 265 |
 | Gold | DIM_WEATHER | 7,248 |
 
