@@ -1,6 +1,6 @@
 # Data Quality Incident Report
 
-**Team:** AMO (Orlando, Ariana, Maryam)
+**Team:** AMO (Maryam Choudhury, Ariana Lopez, Orlando Marin)
 **Date:** August 11, 2026
 
 ---
