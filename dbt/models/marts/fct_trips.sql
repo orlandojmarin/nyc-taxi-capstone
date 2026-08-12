@@ -31,7 +31,15 @@ select
     t.TRIP_DURATION_MINUTES as trip_duration_minutes,
     t."trip_distance"       as trip_distance,
     t."passenger_count"     as passenger_count,
-    t."payment_type"        as payment_type,
+    case t."payment_type"
+        when 1 then 'Credit Card'
+        when 2 then 'Cash'
+        when 3 then 'No Charge'
+        when 4 then 'Dispute'
+        when 5 then 'Unknown'
+        when 6 then 'Voided'
+        else 'Unknown'
+    end                         as payment_type,
     t."fare_amount"         as fare_amount,
     t."extra"               as extra,
     t."mta_tax"             as mta_tax,
