@@ -264,6 +264,25 @@ All exploratory work informed the final architecture decision and is acknowledge
 - **Branch strategy:** main, develop, orlando, ariana, maryam
 - Every team member commits code
 
+## Visualization Reference: MLB Home Field Advantage Project
+
+**Repo:** https://github.com/orlandojmarin/mlb-home-field-advantage
+**Local clone:** `/home/ec2-user/SageMaker/mlb-home-field-advantage/mlb.py`
+
+This is a prior Streamlit project by Orlando that sets the visual standard for the capstone. Key patterns to follow:
+
+- **Consistent color scheme throughout:** Navy blue (`#002D72`) for one category, light gray (`#d9d9d9`) for the other, applied uniformly across every chart
+- **Each visualization has a clear, insight-driven subheader** (states the finding, not just the chart type). Example: "Pitching Fuels MLB Home Field Advantage More Than Hitting" (not "Box Plot of Pitching Stats")
+- **Expandable captions** with `st.expander("Show caption and interpretation")` beneath each chart explaining what the visualization shows and the key takeaway with specific numbers/percentages
+- **Expandable "How to read this" sections** above complex charts (scatter plots) explaining what axes, colors, and positions mean
+- **Clean layout:** `st.markdown("---")` dividers between sections, white plot backgrounds, light gray paper backgrounds (`#f5f5f5`), centered titles
+- **Interactive elements:** Plotly for hover tooltips with detailed data, dropdowns (`st.selectbox`) to toggle between related metrics, tabs for related map views
+- **Value labels on bar charts** showing exact numbers above each bar
+- **Polished styling:** Black text, explicit font sizes (14-22), proper margins, no default Altair/Plotly chrome
+- **Storytelling flow:** Visualizations build on each other to answer the core question progressively
+
+**For the capstone app:** Aim for this same level of polish. Each visualization should state a finding in the subheader, include interpretation in an expander, use the consistent navy/gray color scheme (2025 = `#1a2456`, 2026 = `#a0a0a0`), and include interactivity where useful.
+
 ## Process Reference
 
 See `docs/pattern_a_steps.md` for a detailed step-by-step log of what was done at each layer, why, and how to reproduce it.
