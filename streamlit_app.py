@@ -155,17 +155,19 @@ if selected_table == "mart_weather_demand":
 
     st.markdown("---")
 
-    # --- Chart 2: Average fare by borough, tabbed by weather category ---
-    st.subheader("2. Average Fares Remain Stable Across Weather Conditions")
+    # --- Chart 2: Average trip cost by borough, tabbed by weather category ---
+    st.subheader("2. Average Trip Cost Remains Stable Across Weather Conditions")
 
     with st.expander("How to read this chart"):
         st.markdown("""
-        This grouped bar chart shows the average fare per trip for each borough, comparing 2025 vs. 2026.
+        This grouped bar chart shows the average trip cost (excluding tips) for each borough,
+        comparing 2025 vs. 2026.
 
         - **Gray bars** = 2025
         - **Navy bars** = 2026
         - Each tab shows a different weather category
         - Hover over bars for exact dollar amounts
+        - Tips are excluded for consistency (cash tips are not recorded in TLC data)
         """)
 
     weather_cats = sorted(df["WEATHER_CATEGORY"].unique())
@@ -175,8 +177,12 @@ if selected_table == "mart_weather_demand":
             wcat_df = df[df["WEATHER_CATEGORY"] == weather_cat].copy()
             fare_agg = wcat_df.groupby(
                 ["PICKUP_BOROUGH", "PICKUP_YEAR"], as_index=False
-            ).agg(total_rev=("TOTAL_REVENUE", "sum"), total_trips=("TRIP_COUNT", "sum"))
-            fare_agg["AVG_FARE"] = fare_agg["total_rev"] / fare_agg["total_trips"]
+            ).agg(
+                total_rev=("TOTAL_REVENUE", "sum"),
+                total_tips=("TOTAL_TIPS", "sum"),
+                total_trips=("TRIP_COUNT", "sum")
+            )
+            fare_agg["AVG_FARE"] = (fare_agg["total_rev"] - fare_agg["total_tips"]) / fare_agg["total_trips"]
 
             b_2025 = fare_agg[fare_agg["PICKUP_YEAR"] == 2025].sort_values("PICKUP_BOROUGH")
             b_2026 = fare_agg[fare_agg["PICKUP_YEAR"] == 2026].sort_values("PICKUP_BOROUGH")
@@ -199,7 +205,7 @@ if selected_table == "mart_weather_demand":
                 text=[f"${v:.2f}" for v in vals_2025],
                 textposition="outside",
                 textfont=dict(size=11),
-                hovertemplate="<b>%{x}</b><br>2025 Avg Fare: $%{y:.2f}<extra></extra>"
+                hovertemplate="<b>%{x}</b><br>2025 Avg Cost: $%{y:.2f}<extra></extra>"
             ))
             fig.add_trace(go.Bar(
                 x=borough_list,
@@ -210,10 +216,10 @@ if selected_table == "mart_weather_demand":
                 text=[f"${v:.2f}" for v in vals_2026],
                 textposition="outside",
                 textfont=dict(size=11),
-                hovertemplate="<b>%{x}</b><br>2026 Avg Fare: $%{y:.2f}<extra></extra>"
+                hovertemplate="<b>%{x}</b><br>2026 Avg Cost: $%{y:.2f}<extra></extra>"
             ))
             fig.update_layout(
-                title=dict(text=f"Average Fare by Borough ({weather_cat})",
+                title=dict(text=f"Average Trip Cost by Borough ({weather_cat})",
                            x=0.5, xanchor="center", font=dict(size=20, color="black")),
                 barmode="group",
                 height=500,
@@ -222,7 +228,7 @@ if selected_table == "mart_weather_demand":
                 font=dict(color="black", size=14),
                 margin=dict(l=50, r=50, t=70, b=80),
                 xaxis=dict(title="Borough", title_font=dict(size=16), tickfont=dict(size=14)),
-                yaxis=dict(title="Avg Fare per Trip ($)", title_font=dict(size=16),
+                yaxis=dict(title="Avg Cost per Trip ($)", title_font=dict(size=16),
                            tickfont=dict(size=14), tickprefix="$"),
                 legend=dict(font=dict(size=14))
             )
@@ -230,10 +236,11 @@ if selected_table == "mart_weather_demand":
 
     with st.expander("Show interpretation"):
         st.markdown("""
-        Average fares are relatively consistent across weather categories within each borough,
-        suggesting that weather does not significantly drive up per-trip fares. Year-over-year
-        changes are modest, with slight increases in 2026 likely reflecting inflation or fare
-        adjustments rather than weather-driven surge pricing.
+        Average trip costs (excluding tips) are relatively consistent across weather categories
+        within each borough, suggesting that weather does not significantly drive up per-trip costs.
+        Year-over-year changes are modest, with slight increases in 2026 likely reflecting inflation
+        or fare adjustments rather than weather-driven surge pricing. Tips are excluded because cash
+        tips are not recorded in TLC data, which would skew comparisons across payment types.
         """)
 
     st.markdown("---")
