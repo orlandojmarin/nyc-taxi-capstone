@@ -22,6 +22,10 @@ GOLD_TABLES = {
         "file": "mart_weather_demand.csv",
         "description": "Pre-aggregated demand and revenue metrics by borough, weather, time, and payment type (30,251 rows).",
     },
+    "fct_trips (sample)": {
+        "file": "fct_trips_sample.csv",
+        "description": "Sample of 10,000 rows from the enriched fact table (38M+ total). Shows individual trips with borough, weather, and revenue details.",
+    },
     "dim_zones": {
         "file": "dim_zones.csv",
         "description": "Zone dimension with borough and service zone (265 rows).",
