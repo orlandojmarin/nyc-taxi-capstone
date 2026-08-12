@@ -121,21 +121,23 @@ GROUP BY feature
 ORDER BY feature;
 
 --running ml.predict on k=4
-SELECT *
+SELECT 
+    CENTROID_ID AS cluster,
+    trip_count,
+    avg_total_amount,
+    avg_fare_amount,
+    avg_tip_amount,
+    avg_duration_minutes,
+    avg_distance,
+    pct_rush_hour,
+    pct_night,
+    pct_weekend,
+    pct_adverse_weather
 FROM ML.PREDICT(
   MODEL `bq-sandbox-ariana.nyc_taxi_ml.zone_clusters_k4`,
   (
-    SELECT
-      trip_count,
-      avg_total_amount,
-      avg_fare_amount,
-      avg_tip_amount,
-      avg_duration_minutes,
-      avg_distance,
-      pct_rush_hour,
-      pct_night,
-      pct_weekend,
-      pct_adverse_weather
+    SELECT *
     FROM `bq-sandbox-ariana.nyc_taxi_ml.mart_zone_clustering`
   )
-);
+)
+ORDER BY cluster;
