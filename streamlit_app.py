@@ -1,11 +1,7 @@
-import sys
 from pathlib import Path
 
 import streamlit as st
 import pandas as pd
-
-sys.path.insert(0, str(Path(__file__).parent / "pipeline"))
-from snowflake_connect import get_connection
 
 st.set_page_config(
     page_title="NYC Taxi Capstone - Gold Layer Explorer",
@@ -19,37 +15,27 @@ st.markdown(
     "demand across NYC boroughs, and how did those patterns shift between 2025 and 2026?*"
 )
 
+DATA_DIR = Path(__file__).parent / "data"
+
 GOLD_TABLES = {
     "mart_weather_demand": {
-        "query": "SELECT * FROM TECHCATALYST.AMO_GOLD.MART_WEATHER_DEMAND ORDER BY PICKUP_BOROUGH, PICKUP_YEAR, PICKUP_MONTH",
+        "file": "mart_weather_demand.csv",
         "description": "Pre-aggregated demand and revenue metrics by borough, weather, time, and payment type (34,719 rows).",
     },
-    "fct_trips": {
-        "query": "SELECT * FROM TECHCATALYST.AMO_GOLD.FCT_TRIPS LIMIT 10000",
-        "description": "Fact table of valid trips enriched with borough, zone, and weather data (38M+ rows, showing first 10,000).",
-    },
     "dim_zones": {
-        "query": "SELECT * FROM TECHCATALYST.AMO_GOLD.DIM_ZONES ORDER BY LOCATION_ID",
+        "file": "dim_zones.csv",
         "description": "Zone dimension with borough and service zone (265 rows).",
     },
     "dim_weather": {
-        "query": "SELECT * FROM TECHCATALYST.AMO_GOLD.DIM_WEATHER ORDER BY WEATHER_DATE, WEATHER_HOUR",
+        "file": "dim_weather.csv",
         "description": "Weather dimension with hourly observations and categories (7,248 rows).",
     },
 }
 
 
-@st.cache_data(ttl=600)
-def load_table(query):
-    conn = get_connection()
-    try:
-        cursor = conn.cursor()
-        cursor.execute(query)
-        columns = [desc[0] for desc in cursor.description]
-        rows = cursor.fetchall()
-        return pd.DataFrame(rows, columns=columns)
-    finally:
-        conn.close()
+@st.cache_data
+def load_table(filename):
+    return pd.read_csv(DATA_DIR / filename)
 
 
 st.sidebar.header("Select Gold Table")
@@ -62,8 +48,7 @@ selected_table = st.sidebar.radio(
 st.header(selected_table.replace("_", " ").title())
 st.caption(GOLD_TABLES[selected_table]["description"])
 
-with st.spinner(f"Loading {selected_table} from Snowflake..."):
-    df = load_table(GOLD_TABLES[selected_table]["query"])
+df = load_table(GOLD_TABLES[selected_table]["file"])
 
 col1, col2 = st.columns(2)
 with col1:
