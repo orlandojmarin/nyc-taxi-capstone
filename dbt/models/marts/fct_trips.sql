@@ -29,9 +29,9 @@ select
     t.IS_WEEKEND            as is_weekend,
     t.IS_RUSH_HOUR          as is_rush_hour,
     t.TRIP_DURATION_MINUTES as trip_duration_minutes,
-    t."trip_distance"       as trip_distance,
-    t."passenger_count"     as passenger_count,
-    case t."payment_type"
+    t.TRIP_DISTANCE         as trip_distance,
+    t.PASSENGER_COUNT       as passenger_count,
+    case t.PAYMENT_TYPE
         when 1 then 'Credit Card'
         when 2 then 'Cash'
         when 3 then 'No Charge'
@@ -40,16 +40,16 @@ select
         when 6 then 'Voided'
         else 'Unknown'
     end                         as payment_type,
-    t."fare_amount"         as fare_amount,
-    t."extra"               as extra,
-    t."mta_tax"             as mta_tax,
-    t."tip_amount"          as tip_amount,
-    t."tolls_amount"        as tolls_amount,
-    t."improvement_surcharge" as improvement_surcharge,
-    t."congestion_surcharge" as congestion_surcharge,
-    t."cbd_congestion_fee"  as cbd_congestion_fee,
+    t.FARE_AMOUNT           as fare_amount,
+    t.EXTRA                 as extra,
+    t.MTA_TAX               as mta_tax,
+    t.TIP_AMOUNT            as tip_amount,
+    t.TOLLS_AMOUNT          as tolls_amount,
+    t.IMPROVEMENT_SURCHARGE as improvement_surcharge,
+    t.CONGESTION_SURCHARGE  as congestion_surcharge,
+    t.CBD_CONGESTION_FEE    as cbd_congestion_fee,
     t.AIRPORT_FEE           as airport_fee,
-    t."total_amount"        as total_amount,
+    t.TOTAL_AMOUNT          as total_amount,
     t.PICKUP_ZONE_ID        as pickup_zone_id,
     t.DROPOFF_ZONE_ID       as dropoff_zone_id,
     pz.BOROUGH              as pickup_borough,

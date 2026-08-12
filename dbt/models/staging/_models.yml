@@ -22,8 +22,7 @@ models:
         tests:
           - not_null
 
-      - name: payment_type
-        quote: true
+      - name: PAYMENT_TYPE
         tests:
           - accepted_values:
               arguments:

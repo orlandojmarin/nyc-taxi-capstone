@@ -1,29 +1,29 @@
 with yellow as (
 
     select
-        'yellow'                    as taxi_type,
-        "VendorID"                  as vendor_id,
-        "tpep_pickup_datetime"      as pickup_at,
-        "tpep_dropoff_datetime"     as dropoff_at,
-        "passenger_count",
-        "trip_distance",
-        "RatecodeID"                as rate_code_id,
-        "store_and_fwd_flag",
-        "PULocationID"              as pickup_zone_id,
-        "DOLocationID"              as dropoff_zone_id,
-        "payment_type",
-        "fare_amount",
-        "extra",
-        "mta_tax",
-        "tip_amount",
-        "tolls_amount",
-        "improvement_surcharge",
-        "total_amount",
-        "congestion_surcharge",
-        "Airport_fee"               as airport_fee,
-        "cbd_congestion_fee",
-        null::float                 as ehail_fee,
-        null::int                   as trip_type
+        'yellow'                    as TAXI_TYPE,
+        "VendorID"                  as VENDOR_ID,
+        "tpep_pickup_datetime"      as PICKUP_AT,
+        "tpep_dropoff_datetime"     as DROPOFF_AT,
+        "passenger_count"           as PASSENGER_COUNT,
+        "trip_distance"             as TRIP_DISTANCE,
+        "RatecodeID"                as RATE_CODE_ID,
+        "store_and_fwd_flag"        as STORE_AND_FWD_FLAG,
+        "PULocationID"              as PICKUP_ZONE_ID,
+        "DOLocationID"              as DROPOFF_ZONE_ID,
+        "payment_type"              as PAYMENT_TYPE,
+        "fare_amount"               as FARE_AMOUNT,
+        "extra"                     as EXTRA,
+        "mta_tax"                   as MTA_TAX,
+        "tip_amount"                as TIP_AMOUNT,
+        "tolls_amount"              as TOLLS_AMOUNT,
+        "improvement_surcharge"     as IMPROVEMENT_SURCHARGE,
+        "total_amount"              as TOTAL_AMOUNT,
+        "congestion_surcharge"      as CONGESTION_SURCHARGE,
+        "Airport_fee"               as AIRPORT_FEE,
+        "cbd_congestion_fee"        as CBD_CONGESTION_FEE,
+        null::float                 as EHAIL_FEE,
+        null::int                   as TRIP_TYPE
     from {{ source('bronze', 'yellow_raw') }}
 
 ),
@@ -31,29 +31,29 @@ with yellow as (
 green as (
 
     select
-        'green'                     as taxi_type,
-        "VendorID"                  as vendor_id,
-        "lpep_pickup_datetime"      as pickup_at,
-        "lpep_dropoff_datetime"     as dropoff_at,
-        "passenger_count",
-        "trip_distance",
-        "RatecodeID"                as rate_code_id,
-        "store_and_fwd_flag",
-        "PULocationID"              as pickup_zone_id,
-        "DOLocationID"              as dropoff_zone_id,
-        "payment_type",
-        "fare_amount",
-        "extra",
-        "mta_tax",
-        "tip_amount",
-        "tolls_amount",
-        "improvement_surcharge",
-        "total_amount",
-        "congestion_surcharge",
-        null::float                 as airport_fee,
-        "cbd_congestion_fee",
-        "ehail_fee",
-        "trip_type"
+        'green'                     as TAXI_TYPE,
+        "VendorID"                  as VENDOR_ID,
+        "lpep_pickup_datetime"      as PICKUP_AT,
+        "lpep_dropoff_datetime"     as DROPOFF_AT,
+        "passenger_count"           as PASSENGER_COUNT,
+        "trip_distance"             as TRIP_DISTANCE,
+        "RatecodeID"                as RATE_CODE_ID,
+        "store_and_fwd_flag"        as STORE_AND_FWD_FLAG,
+        "PULocationID"              as PICKUP_ZONE_ID,
+        "DOLocationID"              as DROPOFF_ZONE_ID,
+        "payment_type"              as PAYMENT_TYPE,
+        "fare_amount"               as FARE_AMOUNT,
+        "extra"                     as EXTRA,
+        "mta_tax"                   as MTA_TAX,
+        "tip_amount"                as TIP_AMOUNT,
+        "tolls_amount"              as TOLLS_AMOUNT,
+        "improvement_surcharge"     as IMPROVEMENT_SURCHARGE,
+        "total_amount"              as TOTAL_AMOUNT,
+        "congestion_surcharge"      as CONGESTION_SURCHARGE,
+        null::float                 as AIRPORT_FEE,
+        "cbd_congestion_fee"        as CBD_CONGESTION_FEE,
+        "ehail_fee"                 as EHAIL_FEE,
+        "trip_type"                 as TRIP_TYPE
     from {{ source('bronze', 'green_raw') }}
 
 ),
@@ -70,18 +70,18 @@ with_derived as (
 
     select
         *,
-        datediff('minute', pickup_at, dropoff_at)   as trip_duration_minutes,
-        year(pickup_at)                             as pickup_year,
-        month(pickup_at)                            as pickup_month,
-        dayofweek(pickup_at)                        as pickup_dayofweek,
-        hour(pickup_at)                             as pickup_hour,
-        case when hour(pickup_at) >= 20 or hour(pickup_at) < 6 then true else false end as is_night,
-        case when dayofweek(pickup_at) in (0, 6) then true else false end as is_weekend,
+        datediff('minute', PICKUP_AT, DROPOFF_AT)   as TRIP_DURATION_MINUTES,
+        year(PICKUP_AT)                             as PICKUP_YEAR,
+        month(PICKUP_AT)                            as PICKUP_MONTH,
+        dayofweek(PICKUP_AT)                        as PICKUP_DAYOFWEEK,
+        hour(PICKUP_AT)                             as PICKUP_HOUR,
+        case when hour(PICKUP_AT) >= 20 or hour(PICKUP_AT) < 6 then true else false end as IS_NIGHT,
+        case when dayofweek(PICKUP_AT) in (0, 6) then true else false end as IS_WEEKEND,
         case
-            when dayofweek(pickup_at) not in (0, 6)
-             and (hour(pickup_at) between 7 and 8 or hour(pickup_at) between 17 and 18)
+            when dayofweek(PICKUP_AT) not in (0, 6)
+             and (hour(PICKUP_AT) between 7 and 8 or hour(PICKUP_AT) between 17 and 18)
             then true else false
-        end as is_rush_hour
+        end as IS_RUSH_HOUR
     from combined
 
 )
@@ -89,22 +89,22 @@ with_derived as (
 select
     *,
     case
-        when trip_duration_minutes < 0 then false
-        when "fare_amount" < 0 then false
-        when "total_amount" < 0 then false
-        when "trip_distance" < 0 then false
-        when "trip_distance" > 100 then false
-        when pickup_year not in (2025, 2026) then false
-        when pickup_month not between 1 and 5 then false
+        when TRIP_DURATION_MINUTES < 0 then false
+        when FARE_AMOUNT < 0 then false
+        when TOTAL_AMOUNT < 0 then false
+        when TRIP_DISTANCE < 0 then false
+        when TRIP_DISTANCE > 100 then false
+        when PICKUP_YEAR not in (2025, 2026) then false
+        when PICKUP_MONTH not between 1 and 5 then false
         else true
-    end as is_valid,
+    end as IS_VALID,
     array_to_string(array_construct_compact(
-        case when trip_duration_minutes < 0 then 'dropoff_before_pickup' end,
-        case when "fare_amount" < 0 then 'negative_fare' end,
-        case when "total_amount" < 0 then 'negative_total' end,
-        case when "trip_distance" < 0 then 'negative_distance' end,
-        case when "trip_distance" > 100 then 'extreme_distance' end,
-        case when pickup_year not in (2025, 2026) then 'out_of_range_year' end,
-        case when pickup_month not between 1 and 5 then 'out_of_range_month' end
-    ), ', ') as dq_flag_reason
+        case when TRIP_DURATION_MINUTES < 0 then 'dropoff_before_pickup' end,
+        case when FARE_AMOUNT < 0 then 'negative_fare' end,
+        case when TOTAL_AMOUNT < 0 then 'negative_total' end,
+        case when TRIP_DISTANCE < 0 then 'negative_distance' end,
+        case when TRIP_DISTANCE > 100 then 'extreme_distance' end,
+        case when PICKUP_YEAR not in (2025, 2026) then 'out_of_range_year' end,
+        case when PICKUP_MONTH not between 1 and 5 then 'out_of_range_month' end
+    ), ', ') as DQ_FLAG_REASON
 from with_derived
