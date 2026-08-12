@@ -19,7 +19,8 @@ Supporting analysis includes trip duration, revenue impact, and payment type bre
 - **Source:** `stg_trips` joined to `stg_zones` (pickup and dropoff) and `stg_weather` (on date + hour)
 - **Filter:** only `IS_VALID = TRUE` records
 - **Adds:** pickup/dropoff borough and zone names, weather_category, is_adverse_weather, temperature, precipitation, wind speed
-- **Revenue columns:** fare_amount, extra, mta_tax, tip_amount, tolls_amount, improvement_surcharge, congestion_surcharge, cbd_congestion_fee, airport_fee, total_amount, payment_type
+- **Revenue columns:** fare_amount, extra, mta_tax, tip_amount, tolls_amount, improvement_surcharge, congestion_surcharge, cbd_congestion_fee, airport_fee, total_amount
+- **Payment type:** mapped from integer codes to labels (Credit Card, Cash, No Charge, Dispute, Unknown, Voided)
 - **Materialized as:** table (38,053,445 rows)
 
 ### mart_weather_demand (the main analytical table)
@@ -28,7 +29,7 @@ Supporting analysis includes trip duration, revenue impact, and payment type bre
 - **Grouped by:** pickup_borough, weather_category, is_adverse_weather, pickup_year, pickup_month, pickup_hour, is_rush_hour, is_night, is_weekend, payment_type
 - **Filter:** Excludes trips with pickup_borough of 'Unknown' or 'N/A' (zone IDs 264/265 that cannot be attributed to a real borough)
 - **Metrics:** trip_count, total_revenue, total_fares, total_tips, total_tolls, total_congestion_surcharge, total_cbd_fee, avg_fare_total, avg_tip, avg_duration_minutes, avg_distance
-- **Materialized as:** table (34,719 rows)
+- **Materialized as:** table (30,251 rows)
 - **Use:** This is what Tableau/Streamlit connects to. Pre-aggregated so dashboards are fast.
 
 ### dim_zones (dimension)
@@ -88,7 +89,7 @@ GROUP BY 1, 2, 3
 ORDER BY 1, 2, 3;
 ```
 
-For Tableau/Streamlit, connect directly to `AMO_GOLD.MART_WEATHER_DEMAND`. It's small (~35K rows) and pre-aggregated, so dashboards are instant. Only trips attributable to a real NYC borough are included (Unknown/N/A excluded).
+For Tableau/Streamlit, connect directly to `AMO_GOLD.MART_WEATHER_DEMAND`. It's small (~30K rows) and pre-aggregated, so dashboards are instant. Only trips attributable to a real NYC borough are included (Unknown/N/A excluded).
 
 ---
 

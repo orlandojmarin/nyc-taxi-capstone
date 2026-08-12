@@ -168,7 +168,7 @@ This single script executes all steps in order: Bronze infrastructure, data load
 - [x] Silver layer complete (Aug 11): dbt project with stg_trips (39.2M rows), stg_zones (265), stg_weather (7,248). DQ flags added. 16 tests (15 pass, 1 warn on payment_type).
 - [x] Why models are tables vs views: staging models are tables (39M rows, too expensive to rebuild on every query as views; dashboard and Gold models read Silver repeatedly)
 - [x] Analytical question chosen: "How does adverse weather affect taxi demand across NYC boroughs, and how did those patterns shift between 2025 and 2026?"
-- [x] Gold layer complete (Aug 11): fct_trips (38M rows), mart_weather_demand (34,719 rows), dim_zones (265), dim_weather (7,248). 16 Gold tests passing.
+- [x] Gold layer complete (Aug 11): fct_trips (38M rows), mart_weather_demand (30,251 rows), dim_zones (265), dim_weather (7,248). 16 Gold tests passing.
 - [x] How we handled each data defect (Data Quality Incident Report complete, Aug 11)
 - [ ] Warehouse size and auto-suspend settings
 - [ ] What we cut if behind schedule
@@ -190,7 +190,7 @@ This single script executes all steps in order: Bronze infrastructure, data load
 - [x] Data quality flags added: is_valid + dq_flag_reason columns on stg_trips
 - [x] dbt tests passing (15 pass, 1 expected warn on undocumented payment_type values)
 - [x] Analytical question chosen: "How does adverse weather affect taxi demand across NYC boroughs, and how did those patterns shift between 2025 and 2026?"
-- [x] Gold layer complete: fct_trips (38,053,445 rows), mart_weather_demand (34,719), dim_zones (265), dim_weather (7,248)
+- [x] Gold layer complete: fct_trips (38,053,445 rows), mart_weather_demand (30,251), dim_zones (265), dim_weather (7,248)
 - [x] Gold tests all passing (16/16)
 - [x] dbt docs regenerated with full Bronze-Silver-Gold lineage
 - [x] Orchestration script built and tested (orchestrate.py, 6.1 min end-to-end)

@@ -20,7 +20,7 @@ DATA_DIR = Path(__file__).parent / "data"
 GOLD_TABLES = {
     "mart_weather_demand": {
         "file": "mart_weather_demand.csv",
-        "description": "Pre-aggregated demand and revenue metrics by borough, weather, time, and payment type (34,719 rows).",
+        "description": "Pre-aggregated demand and revenue metrics by borough, weather, time, and payment type (30,251 rows).",
     },
     "dim_zones": {
         "file": "dim_zones.csv",

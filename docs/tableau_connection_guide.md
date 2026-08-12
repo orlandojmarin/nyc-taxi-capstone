@@ -32,7 +32,7 @@ Tableau Public (the free browser version) does not support direct Snowflake conn
    - Tableau will load the data and show you a preview
 
 3. **Verify the data loaded:**
-   - You should see 34,719 rows
+   - You should see 30,251 rows
    - Columns like PICKUP_BOROUGH, WEATHER_CATEGORY, TRIP_COUNT, TOTAL_REVENUE, etc.
    - If columns look correct, click **Update Now** at the bottom to load all data
    - Then click the **Sheet 1** tab at the bottom to start building visualizations
@@ -63,7 +63,7 @@ These are the Snowflake details if you need to log in and run queries or export 
 
 ## Primary Data Source: MART_WEATHER_DEMAND
 
-This is the main table to use. It has 34,719 rows (pre-aggregated from 38M trips), so Tableau will query it instantly with no performance issues. Only trips attributable to a real NYC borough are included (Unknown/N/A zone IDs excluded).
+This is the main table to use. It has 30,251 rows (pre-aggregated from 38M trips), so Tableau will query it instantly with no performance issues. Only trips attributable to a real NYC borough are included (Unknown/N/A zone IDs excluded).
 
 **Connect to:** `TECHCATALYST.AMO_GOLD.MART_WEATHER_DEMAND`
 
@@ -80,7 +80,7 @@ This is the main table to use. It has 34,719 rows (pre-aggregated from 38M trips
 | `IS_RUSH_HOUR` | BOOLEAN | TRUE during 7-8am and 5-6pm |
 | `IS_NIGHT` | BOOLEAN | TRUE between 10pm and 5am |
 | `IS_WEEKEND` | BOOLEAN | TRUE on Saturday/Sunday |
-| `PAYMENT_TYPE` | INT | 1=Credit card, 2=Cash, 3=No charge, 4=Dispute, 5=Unknown, 6=Voided |
+| `PAYMENT_TYPE` | VARCHAR | Human-readable label: Credit Card, Cash, No Charge, Dispute, Unknown, Voided |
 | `TRIP_COUNT` | INT | Number of trips in this group |
 | `TOTAL_REVENUE` | FLOAT | Sum of total_amount for all trips in this group |
 | `TOTAL_FARES` | FLOAT | Sum of base fare only |
@@ -95,7 +95,7 @@ This is the main table to use. It has 34,719 rows (pre-aggregated from 38M trips
 
 ### Important Data Notes
 
-- **Cash tip trap:** Payment type 2 (cash) always shows $0 tips because cash tips are not recorded by the meter. Do not include cash trips in any tip analysis, or explicitly call this out.
+- **Cash tip trap:** Payment type "Cash" always shows $0 tips because cash tips are not recorded by the meter. Do not include cash trips in any tip analysis, or explicitly call this out.
 - **Year-over-year:** Both years cover January through May only. Comparisons are fair month-to-month.
 - **Borough coverage:** Manhattan dominates trip volume. Staten Island and EWR have very few trips.
 
