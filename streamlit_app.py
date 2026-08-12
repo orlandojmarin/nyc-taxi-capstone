@@ -24,8 +24,8 @@ st.markdown(
     "demand across NYC boroughs, and how did those patterns shift between 2025 and 2026?*"
 )
 
-COLOR_2025 = "#002D72"
-COLOR_2026 = "#d9d9d9"
+COLOR_2025 = "#d9d9d9"
+COLOR_2026 = "#002D72"
 
 GOLD_TABLES = {
     "mart_weather_demand": {
@@ -98,77 +98,99 @@ if selected_table == "mart_weather_demand":
         This bar chart shows the **percentage change in average hourly trips** during adverse weather
         compared to clear weather, normalized by the number of hours in each condition.
 
-        - **Navy bars** = 2025
-        - **Gray bars** = 2026
+        - **Gray bars** = 2025
+        - **Navy bars** = 2026
         - **Positive values** = demand *increases* during adverse weather (people switch to taxis)
         - **Negative values** = demand *decreases* during adverse weather
+        - Use the **Day/Night tabs** to control for time-of-day bias (adverse weather at night would
+          naturally show lower demand regardless of weather)
         - Hover over bars for exact percentages
         """)
 
-    weather_df = load_table("SELECT * FROM TECHCATALYST.AMO_GOLD.DIM_WEATHER")
-    weather_df["YEAR"] = weather_df["WEATHER_DATE"].apply(
+    weather_dim = load_table("SELECT * FROM TECHCATALYST.AMO_GOLD.DIM_WEATHER")
+    weather_dim["YEAR"] = weather_dim["WEATHER_DATE"].apply(
         lambda x: x.year if hasattr(x, "year") else int(str(x)[:4])
     )
-
-    borough_changes = []
-    for borough in boroughs:
-        bdf = df[df["PICKUP_BOROUGH"] == borough]
-        for year in [2025, 2026]:
-            clear_hrs = len(weather_df[(weather_df["YEAR"] == year) & (weather_df["IS_ADVERSE_WEATHER"] == False)])
-            adverse_hrs = len(weather_df[(weather_df["YEAR"] == year) & (weather_df["IS_ADVERSE_WEATHER"] == True)])
-            clear_trips = bdf[(bdf["PICKUP_YEAR"] == year) & (bdf["IS_ADVERSE_WEATHER"] == False)]["TRIP_COUNT"].sum()
-            adverse_trips = bdf[(bdf["PICKUP_YEAR"] == year) & (bdf["IS_ADVERSE_WEATHER"] == True)]["TRIP_COUNT"].sum()
-            avg_clear = clear_trips / clear_hrs if clear_hrs > 0 else 0
-            avg_adverse = adverse_trips / adverse_hrs if adverse_hrs > 0 else 0
-            pct_change = ((avg_adverse - avg_clear) / avg_clear * 100) if avg_clear > 0 else 0
-            borough_changes.append({"borough": borough, "year": year, "pct_change": pct_change})
-
-    changes_2025 = [d for d in borough_changes if d["year"] == 2025]
-    changes_2026 = [d for d in borough_changes if d["year"] == 2026]
-
-    fig = go.Figure()
-    fig.add_trace(go.Bar(
-        x=[d["borough"] for d in changes_2025],
-        y=[d["pct_change"] for d in changes_2025],
-        name="2025",
-        marker_color=COLOR_2025,
-        marker_line=dict(width=1, color="black"),
-        hovertemplate="<b>%{x}</b><br>2025 Change: %{y:+.2f}%<extra></extra>"
-    ))
-    fig.add_trace(go.Bar(
-        x=[d["borough"] for d in changes_2026],
-        y=[d["pct_change"] for d in changes_2026],
-        name="2026",
-        marker_color=COLOR_2026,
-        marker_line=dict(width=1, color="black"),
-        hovertemplate="<b>%{x}</b><br>2026 Change: %{y:+.2f}%<extra></extra>"
-    ))
-    fig.add_hline(y=0, line_dash="dash", line_color="gray")
-    fig.update_layout(
-        title=dict(text="Hourly Demand Change During Adverse Weather by Borough",
-                   x=0.5, xanchor="center", font=dict(size=20, color="black")),
-        barmode="group",
-        height=500,
-        plot_bgcolor="white",
-        paper_bgcolor="#f5f5f5",
-        font=dict(color="black", size=14),
-        margin=dict(l=50, r=50, t=70, b=50),
-        xaxis=dict(title="Borough", title_font=dict(size=16), tickfont=dict(size=14)),
-        yaxis=dict(title="% Change in Trips/Hour (Adverse vs. Clear)",
-                   title_font=dict(size=16), tickfont=dict(size=14), ticksuffix="%",
-                   zeroline=True),
-        legend=dict(font=dict(size=14))
+    weather_dim["IS_NIGHT"] = weather_dim["WEATHER_HOUR"].apply(
+        lambda h: h >= 20 or h < 6
     )
-    st.plotly_chart(fig, use_container_width=True)
+
+    def compute_weather_changes(mart_df, weather_ref, night_filter):
+        """Compute per-hour % change for each borough/year, filtered by time of day."""
+        if night_filter is not None:
+            wf = weather_ref[weather_ref["IS_NIGHT"] == night_filter]
+            mf = mart_df[mart_df["IS_NIGHT"] == night_filter]
+        else:
+            wf = weather_ref
+            mf = mart_df
+        results = []
+        for borough in boroughs:
+            bdf = mf[mf["PICKUP_BOROUGH"] == borough]
+            for year in [2025, 2026]:
+                clear_hrs = len(wf[(wf["YEAR"] == year) & (wf["IS_ADVERSE_WEATHER"] == False)])
+                adverse_hrs = len(wf[(wf["YEAR"] == year) & (wf["IS_ADVERSE_WEATHER"] == True)])
+                clear_trips = bdf[(bdf["PICKUP_YEAR"] == year) & (bdf["IS_ADVERSE_WEATHER"] == False)]["TRIP_COUNT"].sum()
+                adverse_trips = bdf[(bdf["PICKUP_YEAR"] == year) & (bdf["IS_ADVERSE_WEATHER"] == True)]["TRIP_COUNT"].sum()
+                avg_clear = clear_trips / clear_hrs if clear_hrs > 0 else 0
+                avg_adverse = adverse_trips / adverse_hrs if adverse_hrs > 0 else 0
+                pct_change = ((avg_adverse - avg_clear) / avg_clear * 100) if avg_clear > 0 else 0
+                results.append({"borough": borough, "year": year, "pct_change": pct_change})
+        return results
+
+    def render_chart1(borough_changes, subtitle):
+        changes_2025 = [d for d in borough_changes if d["year"] == 2025]
+        changes_2026 = [d for d in borough_changes if d["year"] == 2026]
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            x=[d["borough"] for d in changes_2025],
+            y=[d["pct_change"] for d in changes_2025],
+            name="2025",
+            marker_color=COLOR_2025,
+            marker_line=dict(width=1, color="black"),
+            hovertemplate="<b>%{x}</b><br>2025 Change: %{y:+.2f}%<extra></extra>"
+        ))
+        fig.add_trace(go.Bar(
+            x=[d["borough"] for d in changes_2026],
+            y=[d["pct_change"] for d in changes_2026],
+            name="2026",
+            marker_color=COLOR_2026,
+            marker_line=dict(width=1, color="black"),
+            hovertemplate="<b>%{x}</b><br>2026 Change: %{y:+.2f}%<extra></extra>"
+        ))
+        fig.add_hline(y=0, line_dash="dash", line_color="gray")
+        fig.update_layout(
+            title=dict(text=f"Hourly Demand Change During Adverse Weather ({subtitle})",
+                       x=0.5, xanchor="center", font=dict(size=20, color="black")),
+            barmode="group",
+            height=500,
+            plot_bgcolor="white",
+            paper_bgcolor="#f5f5f5",
+            font=dict(color="black", size=14),
+            margin=dict(l=50, r=50, t=70, b=50),
+            xaxis=dict(title="Borough", title_font=dict(size=16), tickfont=dict(size=14)),
+            yaxis=dict(title="% Change in Trips/Hour (Adverse vs. Clear)",
+                       title_font=dict(size=16), tickfont=dict(size=14), ticksuffix="%",
+                       zeroline=True),
+            legend=dict(font=dict(size=14))
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    tab_day, tab_night = st.tabs(["Day (6 AM - 8 PM)", "Night (8 PM - 6 AM)"])
+    with tab_day:
+        day_changes = compute_weather_changes(df, weather_dim, night_filter=False)
+        render_chart1(day_changes, "Daytime Hours")
+    with tab_night:
+        night_changes = compute_weather_changes(df, weather_dim, night_filter=True)
+        render_chart1(night_changes, "Nighttime Hours")
 
     with st.expander("Show interpretation"):
         st.markdown("""
-        In 2025, adverse weather actually *increased* hourly taxi demand in Manhattan (+14.6%) and
-        Brooklyn (+19.5%), suggesting riders switched from walking or public transit to taxis during
-        bad weather. However, in 2026 this pattern reversed: Manhattan saw a 16.5% drop and Queens
-        a 20% drop during adverse weather. This year-over-year shift is a key finding, potentially
-        reflecting changes in rider behavior, rideshare competition, or the severity of weather events
-        between the two periods.
+        Splitting by time of day controls for the possibility that adverse weather clusters at night
+        (when demand is naturally lower). During **daytime hours**, the 2025 pattern holds: adverse
+        weather *increased* taxi demand in Manhattan and Brooklyn as riders switched from walking or
+        transit. In 2026, daytime adverse weather drove demand *down*, suggesting a behavioral shift.
+        The **nighttime tab** shows whether this pattern persists when baseline demand is already low,
+        helping confirm the finding is not simply a time-of-day artifact.
         """)
 
     st.markdown("---")
@@ -180,8 +202,8 @@ if selected_table == "mart_weather_demand":
         st.markdown("""
         This line chart shows total monthly trips for each borough, with one line per year.
 
-        - **Navy line** = 2025
-        - **Gray line** = 2026
+        - **Gray line** = 2025
+        - **Navy line** = 2026
         - Hover over points for exact trip counts
         - Each tab shows one borough
         """)
@@ -211,8 +233,8 @@ if selected_table == "mart_weather_demand":
             fig.add_trace(go.Scatter(
                 x=months_2026, y=m_2026["TRIP_COUNT"].values,
                 mode="lines+markers", name="2026",
-                line=dict(color="#808080", width=3),
-                marker=dict(size=8, color="#808080"),
+                line=dict(color=COLOR_2026, width=3),
+                marker=dict(size=8, color=COLOR_2026),
                 hovertemplate="<b>2026</b><br>Month: %{x}<br>Trips: %{y:,.0f}<extra></extra>"
             ))
             fig.update_layout(
@@ -245,8 +267,8 @@ if selected_table == "mart_weather_demand":
         st.markdown("""
         This grouped bar chart shows the average fare per trip for each borough, comparing 2025 vs. 2026.
 
-        - **Navy bars** = 2025
-        - **Gray bars** = 2026
+        - **Gray bars** = 2025
+        - **Navy bars** = 2026
         - Each tab shows a different weather category
         - Value labels show exact dollar amounts above each bar
         """)
