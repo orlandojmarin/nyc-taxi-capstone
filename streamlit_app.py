@@ -6,9 +6,8 @@ warnings.filterwarnings("ignore")
 
 import streamlit as st
 import pandas as pd
-import altair as alt
-
-alt.data_transformers.disable_max_rows()
+import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).parent / "pipeline"))
 from snowflake_connect import query_to_df
@@ -24,6 +23,9 @@ st.markdown(
     "**Team AMO** | Analytical Question: *How does adverse weather affect taxi "
     "demand across NYC boroughs, and how did those patterns shift between 2025 and 2026?*"
 )
+
+COLOR_2025 = "#002D72"
+COLOR_2026 = "#d9d9d9"
 
 GOLD_TABLES = {
     "mart_weather_demand": {
@@ -80,19 +82,26 @@ with st.expander("Column Details"):
     st.dataframe(col_info, width="stretch")
 
 if selected_table == "mart_weather_demand":
-    st.divider()
+    st.markdown("---")
     st.header("Visualizations")
 
     MONTH_LABELS = {1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "May",
                     6: "Jun", 7: "Jul", 8: "Aug", 9: "Sep", 10: "Oct",
                     11: "Nov", 12: "Dec"}
-    MONTH_ORDER = [MONTH_LABELS[m] for m in sorted(MONTH_LABELS.keys())]
     boroughs = sorted(df["PICKUP_BOROUGH"].unique())
 
-    YEAR_COLOR = alt.Scale(domain=["2025", "2026"], range=["#1a2456", "#a0a0a0"])
-
     # --- Chart 1: Trip demand per borough tab, grouped by year and weather ---
-    st.subheader("1. Trip Demand by Year and Weather Condition")
+    st.subheader("1. Adverse Weather Reduces Taxi Demand Across All Boroughs")
+
+    with st.expander("How to read this chart"):
+        st.markdown("""
+        This double bar chart compares total trip counts during **clear** vs. **adverse** weather for each borough.
+
+        - **Navy bars** = 2025 data
+        - **Gray bars** = 2026 data
+        - Each tab shows one borough so scale differences between boroughs don't obscure patterns
+        """)
+
     tabs1 = st.tabs(boroughs)
     for tab, borough in zip(tabs1, boroughs):
         with tab:
@@ -100,25 +109,63 @@ if selected_table == "mart_weather_demand":
             grouped = borough_df.groupby(
                 ["PICKUP_YEAR", "IS_ADVERSE_WEATHER"], as_index=False
             )["TRIP_COUNT"].sum()
-            grouped["Year"] = grouped["PICKUP_YEAR"].astype(str)
-            grouped["Weather"] = grouped["IS_ADVERSE_WEATHER"].map(
-                {True: "Adverse", False: "Clear"}
-            )
-            chart1 = (
-                alt.Chart(grouped)
-                .mark_bar()
-                .encode(
-                    x=alt.X("Weather:N", title="Weather"),
-                    y=alt.Y("TRIP_COUNT:Q", title="Total Trips"),
-                    color=alt.Color("Year:N", scale=YEAR_COLOR),
-                    xOffset="Year:N",
-                )
-                .properties(height=400, title=borough)
-            )
-            st.altair_chart(chart1, width="stretch")
+
+            clear_2025 = grouped[(grouped["PICKUP_YEAR"] == 2025) & (grouped["IS_ADVERSE_WEATHER"] == False)]["TRIP_COUNT"].sum()
+            adverse_2025 = grouped[(grouped["PICKUP_YEAR"] == 2025) & (grouped["IS_ADVERSE_WEATHER"] == True)]["TRIP_COUNT"].sum()
+            clear_2026 = grouped[(grouped["PICKUP_YEAR"] == 2026) & (grouped["IS_ADVERSE_WEATHER"] == False)]["TRIP_COUNT"].sum()
+            adverse_2026 = grouped[(grouped["PICKUP_YEAR"] == 2026) & (grouped["IS_ADVERSE_WEATHER"] == True)]["TRIP_COUNT"].sum()
+
+            categories = ["Clear Weather", "Adverse Weather"]
+            vals_2025 = [clear_2025, adverse_2025]
+            vals_2026 = [clear_2026, adverse_2026]
+
+            fig, ax = plt.subplots(figsize=(10, 6))
+            x = range(len(categories))
+            width = 0.35
+            x_2025 = [pos - width/2 for pos in x]
+            x_2026 = [pos + width/2 for pos in x]
+
+            bars1 = ax.bar(x_2025, vals_2025, width, label="2025", color=COLOR_2025, edgecolor="black")
+            bars2 = ax.bar(x_2026, vals_2026, width, label="2026", color=COLOR_2026, edgecolor="black")
+
+            for bar in list(bars1) + list(bars2):
+                height = bar.get_height()
+                ax.annotate(f'{int(height):,}',
+                            xy=(bar.get_x() + bar.get_width()/2, height),
+                            xytext=(0, 5), textcoords="offset points",
+                            ha='center', va='bottom', fontsize=9)
+
+            ax.set_ylabel("Total Trips")
+            ax.set_title(f"Trip Demand: Clear vs. Adverse Weather ({borough})")
+            ax.set_xticks(x)
+            ax.set_xticklabels(categories)
+            ax.legend()
+            st.pyplot(fig)
+            plt.close(fig)
+
+    with st.expander("Show interpretation"):
+        st.markdown("""
+        Across all boroughs, adverse weather consistently reduces taxi demand. The drop is proportionally
+        similar between 2025 and 2026, suggesting that weather sensitivity has remained stable year over year.
+        Manhattan shows the smallest proportional drop, likely due to higher baseline demand from commuters
+        who have fewer alternatives during bad weather.
+        """)
+
+    st.markdown("---")
 
     # --- Chart 2: Year-over-year monthly trip volume by borough ---
-    st.subheader("2. Year-over-Year Monthly Trip Volume (2025 vs. 2026)")
+    st.subheader("2. Monthly Trip Volume Shows Consistent Year-over-Year Growth")
+
+    with st.expander("How to read this chart"):
+        st.markdown("""
+        This line chart shows total monthly trips for each borough, with one line per year.
+
+        - **Navy line** = 2025
+        - **Gray line** = 2026
+        - Hover over points for exact trip counts
+        - Each tab shows one borough
+        """)
+
     tabs2 = st.tabs(boroughs)
     for tab, borough in zip(tabs2, boroughs):
         with tab:
@@ -126,24 +173,64 @@ if selected_table == "mart_weather_demand":
             monthly = borough_df.groupby(
                 ["PICKUP_YEAR", "PICKUP_MONTH"], as_index=False
             )["TRIP_COUNT"].sum()
-            monthly["Year"] = monthly["PICKUP_YEAR"].astype(str)
-            monthly["Month"] = monthly["PICKUP_MONTH"].map(MONTH_LABELS)
-            chart2 = (
-                alt.Chart(monthly)
-                .mark_line(point=True, strokeWidth=3)
-                .encode(
-                    x=alt.X("Month:N", title="Month",
-                            sort=[m for m in MONTH_ORDER if m in monthly["Month"].values]),
-                    y=alt.Y("TRIP_COUNT:Q", title="Total Trips",
-                            scale=alt.Scale(zero=False)),
-                    color=alt.Color("Year:N", title="Year", scale=YEAR_COLOR),
-                )
-                .properties(height=400, title=borough)
+
+            m_2025 = monthly[monthly["PICKUP_YEAR"] == 2025].sort_values("PICKUP_MONTH")
+            m_2026 = monthly[monthly["PICKUP_YEAR"] == 2026].sort_values("PICKUP_MONTH")
+
+            months_2025 = [MONTH_LABELS[m] for m in m_2025["PICKUP_MONTH"]]
+            months_2026 = [MONTH_LABELS[m] for m in m_2026["PICKUP_MONTH"]]
+
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(
+                x=months_2025, y=m_2025["TRIP_COUNT"].values,
+                mode="lines+markers", name="2025",
+                line=dict(color=COLOR_2025, width=3),
+                marker=dict(size=8),
+                hovertemplate="<b>2025</b><br>Month: %{x}<br>Trips: %{y:,.0f}<extra></extra>"
+            ))
+            fig.add_trace(go.Scatter(
+                x=months_2026, y=m_2026["TRIP_COUNT"].values,
+                mode="lines+markers", name="2026",
+                line=dict(color="#808080", width=3),
+                marker=dict(size=8, color="#808080"),
+                hovertemplate="<b>2026</b><br>Month: %{x}<br>Trips: %{y:,.0f}<extra></extra>"
+            ))
+            fig.update_layout(
+                title=dict(text=f"Monthly Trip Volume ({borough})", x=0.5, xanchor="center",
+                           font=dict(size=20, color="black")),
+                height=450,
+                plot_bgcolor="white",
+                paper_bgcolor="#f5f5f5",
+                font=dict(color="black", size=14),
+                margin=dict(l=50, r=50, t=70, b=50),
+                xaxis=dict(title="Month", title_font=dict(size=16), tickfont=dict(size=14)),
+                yaxis=dict(title="Total Trips", title_font=dict(size=16), tickfont=dict(size=14)),
+                legend=dict(font=dict(size=14))
             )
-            st.altair_chart(chart2, width="stretch")
+            st.plotly_chart(fig, use_container_width=True)
+
+    with st.expander("Show interpretation"):
+        st.markdown("""
+        Most boroughs show a consistent upward trend from January through May in both years,
+        reflecting seasonal demand patterns. 2026 generally tracks above 2025, suggesting
+        year-over-year growth in taxi usage across the city.
+        """)
+
+    st.markdown("---")
 
     # --- Chart 3: Average fare by borough, tabbed by weather category ---
-    st.subheader("3. Average Fare by Borough and Year")
+    st.subheader("3. Average Fares Remain Stable Across Weather Conditions")
+
+    with st.expander("How to read this chart"):
+        st.markdown("""
+        This grouped bar chart shows the average fare per trip for each borough, comparing 2025 vs. 2026.
+
+        - **Navy bars** = 2025
+        - **Gray bars** = 2026
+        - Each tab shows a different weather category
+        - Value labels show exact dollar amounts above each bar
+        """)
+
     weather_cats = sorted(df["WEATHER_CATEGORY"].unique())
     tabs3 = st.tabs(weather_cats)
     for tab, weather_cat in zip(tabs3, weather_cats):
@@ -153,16 +240,46 @@ if selected_table == "mart_weather_demand":
                 ["PICKUP_BOROUGH", "PICKUP_YEAR"], as_index=False
             ).agg(total_rev=("TOTAL_REVENUE", "sum"), total_trips=("TRIP_COUNT", "sum"))
             fare_agg["AVG_FARE"] = fare_agg["total_rev"] / fare_agg["total_trips"]
-            fare_agg["Year"] = fare_agg["PICKUP_YEAR"].astype(str)
-            chart3 = (
-                alt.Chart(fare_agg)
-                .mark_bar()
-                .encode(
-                    x=alt.X("PICKUP_BOROUGH:N", title="Borough"),
-                    y=alt.Y("AVG_FARE:Q", title="Avg Fare per Trip ($)"),
-                    color=alt.Color("Year:N", scale=YEAR_COLOR),
-                    xOffset="Year:N",
-                )
-                .properties(height=400, title=weather_cat)
-            )
-            st.altair_chart(chart3, width="stretch")
+
+            b_2025 = fare_agg[fare_agg["PICKUP_YEAR"] == 2025].sort_values("PICKUP_BOROUGH")
+            b_2026 = fare_agg[fare_agg["PICKUP_YEAR"] == 2026].sort_values("PICKUP_BOROUGH")
+
+            borough_list = sorted(fare_agg["PICKUP_BOROUGH"].unique())
+            vals_2025 = [b_2025[b_2025["PICKUP_BOROUGH"] == b]["AVG_FARE"].values[0]
+                         if len(b_2025[b_2025["PICKUP_BOROUGH"] == b]) > 0 else 0
+                         for b in borough_list]
+            vals_2026 = [b_2026[b_2026["PICKUP_BOROUGH"] == b]["AVG_FARE"].values[0]
+                         if len(b_2026[b_2026["PICKUP_BOROUGH"] == b]) > 0 else 0
+                         for b in borough_list]
+
+            fig, ax = plt.subplots(figsize=(10, 6))
+            x = range(len(borough_list))
+            width = 0.35
+            x_2025 = [pos - width/2 for pos in x]
+            x_2026 = [pos + width/2 for pos in x]
+
+            bars1 = ax.bar(x_2025, vals_2025, width, label="2025", color=COLOR_2025, edgecolor="black")
+            bars2 = ax.bar(x_2026, vals_2026, width, label="2026", color=COLOR_2026, edgecolor="black")
+
+            for bar in list(bars1) + list(bars2):
+                height = bar.get_height()
+                ax.annotate(f'${height:.2f}',
+                            xy=(bar.get_x() + bar.get_width()/2, height),
+                            xytext=(0, 5), textcoords="offset points",
+                            ha='center', va='bottom', fontsize=9)
+
+            ax.set_ylabel("Avg Fare per Trip ($)")
+            ax.set_title(f"Average Fare by Borough ({weather_cat})")
+            ax.set_xticks(x)
+            ax.set_xticklabels(borough_list)
+            ax.legend()
+            st.pyplot(fig)
+            plt.close(fig)
+
+    with st.expander("Show interpretation"):
+        st.markdown("""
+        Average fares are relatively consistent across weather categories within each borough,
+        suggesting that weather does not significantly drive up per-trip fares. Year-over-year
+        changes are modest, with slight increases in 2026 likely reflecting inflation or fare
+        adjustments rather than weather-driven surge pricing.
+        """)
