@@ -90,65 +90,75 @@ if selected_table == "mart_weather_demand":
                     11: "Nov", 12: "Dec"}
     boroughs = sorted(df["PICKUP_BOROUGH"].unique())
 
-    # --- Chart 1: Trip demand per borough tab, grouped by year and weather ---
+    # --- Chart 1: Percentage drop in demand during adverse weather ---
     st.subheader("1. Adverse Weather Reduces Taxi Demand Across All Boroughs")
 
     with st.expander("How to read this chart"):
         st.markdown("""
-        This double bar chart compares total trip counts during **clear** vs. **adverse** weather for each borough.
+        This bar chart shows the **percentage drop in trips** during adverse weather compared to clear weather for each borough.
 
-        - **Navy bars** = 2025 data
-        - **Gray bars** = 2026 data
-        - Each tab shows one borough so scale differences between boroughs don't obscure patterns
+        - **Navy bar** = 2025 demand drop
+        - **Gray bar** = 2026 demand drop
+        - A larger bar means that borough loses more demand during bad weather
+        - Hover over bars for exact percentages
         """)
 
-    tabs1 = st.tabs(boroughs)
-    for tab, borough in zip(tabs1, boroughs):
-        with tab:
-            borough_df = df[df["PICKUP_BOROUGH"] == borough].copy()
-            grouped = borough_df.groupby(
-                ["PICKUP_YEAR", "IS_ADVERSE_WEATHER"], as_index=False
-            )["TRIP_COUNT"].sum()
+    borough_drops = []
+    for borough in boroughs:
+        borough_df = df[df["PICKUP_BOROUGH"] == borough].copy()
+        grouped = borough_df.groupby(
+            ["PICKUP_YEAR", "IS_ADVERSE_WEATHER"], as_index=False
+        )["TRIP_COUNT"].sum()
 
-            clear_2025 = grouped[(grouped["PICKUP_YEAR"] == 2025) & (grouped["IS_ADVERSE_WEATHER"] == False)]["TRIP_COUNT"].sum()
-            adverse_2025 = grouped[(grouped["PICKUP_YEAR"] == 2025) & (grouped["IS_ADVERSE_WEATHER"] == True)]["TRIP_COUNT"].sum()
-            clear_2026 = grouped[(grouped["PICKUP_YEAR"] == 2026) & (grouped["IS_ADVERSE_WEATHER"] == False)]["TRIP_COUNT"].sum()
-            adverse_2026 = grouped[(grouped["PICKUP_YEAR"] == 2026) & (grouped["IS_ADVERSE_WEATHER"] == True)]["TRIP_COUNT"].sum()
+        clear_2025 = grouped[(grouped["PICKUP_YEAR"] == 2025) & (grouped["IS_ADVERSE_WEATHER"] == False)]["TRIP_COUNT"].sum()
+        adverse_2025 = grouped[(grouped["PICKUP_YEAR"] == 2025) & (grouped["IS_ADVERSE_WEATHER"] == True)]["TRIP_COUNT"].sum()
+        clear_2026 = grouped[(grouped["PICKUP_YEAR"] == 2026) & (grouped["IS_ADVERSE_WEATHER"] == False)]["TRIP_COUNT"].sum()
+        adverse_2026 = grouped[(grouped["PICKUP_YEAR"] == 2026) & (grouped["IS_ADVERSE_WEATHER"] == True)]["TRIP_COUNT"].sum()
 
-            categories = ["Clear Weather", "Adverse Weather"]
-            vals_2025 = [clear_2025, adverse_2025]
-            vals_2026 = [clear_2026, adverse_2026]
+        drop_2025 = ((clear_2025 - adverse_2025) / clear_2025 * 100) if clear_2025 > 0 else 0
+        drop_2026 = ((clear_2026 - adverse_2026) / clear_2026 * 100) if clear_2026 > 0 else 0
+        borough_drops.append({"borough": borough, "drop_2025": drop_2025, "drop_2026": drop_2026})
 
-            fig, ax = plt.subplots(figsize=(10, 6))
-            x = range(len(categories))
-            width = 0.35
-            x_2025 = [pos - width/2 for pos in x]
-            x_2026 = [pos + width/2 for pos in x]
-
-            bars1 = ax.bar(x_2025, vals_2025, width, label="2025", color=COLOR_2025, edgecolor="black")
-            bars2 = ax.bar(x_2026, vals_2026, width, label="2026", color=COLOR_2026, edgecolor="black")
-
-            for bar in list(bars1) + list(bars2):
-                height = bar.get_height()
-                ax.annotate(f'{int(height):,}',
-                            xy=(bar.get_x() + bar.get_width()/2, height),
-                            xytext=(0, 5), textcoords="offset points",
-                            ha='center', va='bottom', fontsize=9)
-
-            ax.set_ylabel("Total Trips")
-            ax.set_title(f"Trip Demand: Clear vs. Adverse Weather ({borough})")
-            ax.set_xticks(x)
-            ax.set_xticklabels(categories)
-            ax.legend()
-            st.pyplot(fig)
-            plt.close(fig)
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=[d["borough"] for d in borough_drops],
+        y=[d["drop_2025"] for d in borough_drops],
+        name="2025",
+        marker_color=COLOR_2025,
+        marker_line=dict(width=1, color="black"),
+        hovertemplate="<b>%{x}</b><br>2025 Demand Drop: %{y:.1f}%<extra></extra>"
+    ))
+    fig.add_trace(go.Bar(
+        x=[d["borough"] for d in borough_drops],
+        y=[d["drop_2026"] for d in borough_drops],
+        name="2026",
+        marker_color=COLOR_2026,
+        marker_line=dict(width=1, color="black"),
+        hovertemplate="<b>%{x}</b><br>2026 Demand Drop: %{y:.1f}%<extra></extra>"
+    ))
+    fig.update_layout(
+        title=dict(text="Demand Drop During Adverse Weather by Borough", x=0.5, xanchor="center",
+                   font=dict(size=20, color="black")),
+        barmode="group",
+        height=500,
+        plot_bgcolor="white",
+        paper_bgcolor="#f5f5f5",
+        font=dict(color="black", size=14),
+        margin=dict(l=50, r=50, t=70, b=50),
+        xaxis=dict(title="Borough", title_font=dict(size=16), tickfont=dict(size=14)),
+        yaxis=dict(title="% Fewer Trips (Adverse vs. Clear)", title_font=dict(size=16),
+                   tickfont=dict(size=14), ticksuffix="%"),
+        legend=dict(font=dict(size=14))
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
     with st.expander("Show interpretation"):
         st.markdown("""
-        Across all boroughs, adverse weather consistently reduces taxi demand. The drop is proportionally
-        similar between 2025 and 2026, suggesting that weather sensitivity has remained stable year over year.
-        Manhattan shows the smallest proportional drop, likely due to higher baseline demand from commuters
-        who have fewer alternatives during bad weather.
+        Adverse weather reduces taxi demand across all boroughs, with drops ranging from roughly 15% to over 50%
+        depending on the borough. The percentage drop is consistent between 2025 and 2026, suggesting that
+        weather sensitivity has remained stable year over year. Boroughs with lower baseline demand
+        (Staten Island, Bronx) tend to show larger proportional drops, while Manhattan's dense commuter
+        base provides more resilience during bad weather.
         """)
 
     st.markdown("---")
