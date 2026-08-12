@@ -155,8 +155,91 @@ if selected_table == "mart_weather_demand":
 
     st.markdown("---")
 
-    # --- Chart 2: Per-hour demand change during adverse weather ---
-    st.subheader("2. Weather's Effect on Taxi Demand Shifted Between 2025 and 2026")
+    # --- Chart 2: Average fare by borough, tabbed by weather category ---
+    st.subheader("2. Average Fares Remain Stable Across Weather Conditions")
+
+    with st.expander("How to read this chart"):
+        st.markdown("""
+        This grouped bar chart shows the average fare per trip for each borough, comparing 2025 vs. 2026.
+
+        - **Gray bars** = 2025
+        - **Navy bars** = 2026
+        - Each tab shows a different weather category
+        - Hover over bars for exact dollar amounts
+        """)
+
+    weather_cats = sorted(df["WEATHER_CATEGORY"].unique())
+    tabs3 = st.tabs(weather_cats)
+    for tab, weather_cat in zip(tabs3, weather_cats):
+        with tab:
+            wcat_df = df[df["WEATHER_CATEGORY"] == weather_cat].copy()
+            fare_agg = wcat_df.groupby(
+                ["PICKUP_BOROUGH", "PICKUP_YEAR"], as_index=False
+            ).agg(total_rev=("TOTAL_REVENUE", "sum"), total_trips=("TRIP_COUNT", "sum"))
+            fare_agg["AVG_FARE"] = fare_agg["total_rev"] / fare_agg["total_trips"]
+
+            b_2025 = fare_agg[fare_agg["PICKUP_YEAR"] == 2025].sort_values("PICKUP_BOROUGH")
+            b_2026 = fare_agg[fare_agg["PICKUP_YEAR"] == 2026].sort_values("PICKUP_BOROUGH")
+
+            borough_list = sorted(fare_agg["PICKUP_BOROUGH"].unique())
+            vals_2025 = [b_2025[b_2025["PICKUP_BOROUGH"] == b]["AVG_FARE"].values[0]
+                         if len(b_2025[b_2025["PICKUP_BOROUGH"] == b]) > 0 else 0
+                         for b in borough_list]
+            vals_2026 = [b_2026[b_2026["PICKUP_BOROUGH"] == b]["AVG_FARE"].values[0]
+                         if len(b_2026[b_2026["PICKUP_BOROUGH"] == b]) > 0 else 0
+                         for b in borough_list]
+
+            fig = go.Figure()
+            fig.add_trace(go.Bar(
+                x=borough_list,
+                y=vals_2025,
+                name="2025",
+                marker_color=COLOR_2025,
+                marker_line=dict(width=1, color="black"),
+                text=[f"${v:.2f}" for v in vals_2025],
+                textposition="outside",
+                textfont=dict(size=11),
+                hovertemplate="<b>%{x}</b><br>2025 Avg Fare: $%{y:.2f}<extra></extra>"
+            ))
+            fig.add_trace(go.Bar(
+                x=borough_list,
+                y=vals_2026,
+                name="2026",
+                marker_color=COLOR_2026,
+                marker_line=dict(width=1, color="black"),
+                text=[f"${v:.2f}" for v in vals_2026],
+                textposition="outside",
+                textfont=dict(size=11),
+                hovertemplate="<b>%{x}</b><br>2026 Avg Fare: $%{y:.2f}<extra></extra>"
+            ))
+            fig.update_layout(
+                title=dict(text=f"Average Fare by Borough ({weather_cat})",
+                           x=0.5, xanchor="center", font=dict(size=20, color="black")),
+                barmode="group",
+                height=500,
+                plot_bgcolor="white",
+                paper_bgcolor="#f5f5f5",
+                font=dict(color="black", size=14),
+                margin=dict(l=50, r=50, t=70, b=80),
+                xaxis=dict(title="Borough", title_font=dict(size=16), tickfont=dict(size=14)),
+                yaxis=dict(title="Avg Fare per Trip ($)", title_font=dict(size=16),
+                           tickfont=dict(size=14), tickprefix="$"),
+                legend=dict(font=dict(size=14))
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+    with st.expander("Show interpretation"):
+        st.markdown("""
+        Average fares are relatively consistent across weather categories within each borough,
+        suggesting that weather does not significantly drive up per-trip fares. Year-over-year
+        changes are modest, with slight increases in 2026 likely reflecting inflation or fare
+        adjustments rather than weather-driven surge pricing.
+        """)
+
+    st.markdown("---")
+
+    # --- Chart 3: Per-hour demand change during adverse weather ---
+    st.subheader("3. Weather's Effect on Taxi Demand Shifted Between 2025 and 2026")
 
     with st.expander("How to read this chart"):
         st.markdown("""
@@ -255,87 +338,4 @@ if selected_table == "mart_weather_demand":
         transit. In 2026, daytime adverse weather drove demand *down*, suggesting a behavioral shift.
         The **nighttime tab** shows whether this pattern persists when baseline demand is already low,
         helping confirm the finding is not simply a time-of-day artifact.
-        """)
-
-    st.markdown("---")
-
-    # --- Chart 3: Average fare by borough, tabbed by weather category ---
-    st.subheader("3. Average Fares Remain Stable Across Weather Conditions")
-
-    with st.expander("How to read this chart"):
-        st.markdown("""
-        This grouped bar chart shows the average fare per trip for each borough, comparing 2025 vs. 2026.
-
-        - **Gray bars** = 2025
-        - **Navy bars** = 2026
-        - Each tab shows a different weather category
-        - Hover over bars for exact dollar amounts
-        """)
-
-    weather_cats = sorted(df["WEATHER_CATEGORY"].unique())
-    tabs3 = st.tabs(weather_cats)
-    for tab, weather_cat in zip(tabs3, weather_cats):
-        with tab:
-            wcat_df = df[df["WEATHER_CATEGORY"] == weather_cat].copy()
-            fare_agg = wcat_df.groupby(
-                ["PICKUP_BOROUGH", "PICKUP_YEAR"], as_index=False
-            ).agg(total_rev=("TOTAL_REVENUE", "sum"), total_trips=("TRIP_COUNT", "sum"))
-            fare_agg["AVG_FARE"] = fare_agg["total_rev"] / fare_agg["total_trips"]
-
-            b_2025 = fare_agg[fare_agg["PICKUP_YEAR"] == 2025].sort_values("PICKUP_BOROUGH")
-            b_2026 = fare_agg[fare_agg["PICKUP_YEAR"] == 2026].sort_values("PICKUP_BOROUGH")
-
-            borough_list = sorted(fare_agg["PICKUP_BOROUGH"].unique())
-            vals_2025 = [b_2025[b_2025["PICKUP_BOROUGH"] == b]["AVG_FARE"].values[0]
-                         if len(b_2025[b_2025["PICKUP_BOROUGH"] == b]) > 0 else 0
-                         for b in borough_list]
-            vals_2026 = [b_2026[b_2026["PICKUP_BOROUGH"] == b]["AVG_FARE"].values[0]
-                         if len(b_2026[b_2026["PICKUP_BOROUGH"] == b]) > 0 else 0
-                         for b in borough_list]
-
-            fig = go.Figure()
-            fig.add_trace(go.Bar(
-                x=borough_list,
-                y=vals_2025,
-                name="2025",
-                marker_color=COLOR_2025,
-                marker_line=dict(width=1, color="black"),
-                text=[f"${v:.2f}" for v in vals_2025],
-                textposition="outside",
-                textfont=dict(size=11),
-                hovertemplate="<b>%{x}</b><br>2025 Avg Fare: $%{y:.2f}<extra></extra>"
-            ))
-            fig.add_trace(go.Bar(
-                x=borough_list,
-                y=vals_2026,
-                name="2026",
-                marker_color=COLOR_2026,
-                marker_line=dict(width=1, color="black"),
-                text=[f"${v:.2f}" for v in vals_2026],
-                textposition="outside",
-                textfont=dict(size=11),
-                hovertemplate="<b>%{x}</b><br>2026 Avg Fare: $%{y:.2f}<extra></extra>"
-            ))
-            fig.update_layout(
-                title=dict(text=f"Average Fare by Borough ({weather_cat})",
-                           x=0.5, xanchor="center", font=dict(size=20, color="black")),
-                barmode="group",
-                height=500,
-                plot_bgcolor="white",
-                paper_bgcolor="#f5f5f5",
-                font=dict(color="black", size=14),
-                margin=dict(l=50, r=50, t=70, b=80),
-                xaxis=dict(title="Borough", title_font=dict(size=16), tickfont=dict(size=14)),
-                yaxis=dict(title="Avg Fare per Trip ($)", title_font=dict(size=16),
-                           tickfont=dict(size=14), tickprefix="$"),
-                legend=dict(font=dict(size=14))
-            )
-            st.plotly_chart(fig, use_container_width=True)
-
-    with st.expander("Show interpretation"):
-        st.markdown("""
-        Average fares are relatively consistent across weather categories within each borough,
-        suggesting that weather does not significantly drive up per-trip fares. Year-over-year
-        changes are modest, with slight increases in 2026 likely reflecting inflation or fare
-        adjustments rather than weather-driven surge pricing.
         """)
