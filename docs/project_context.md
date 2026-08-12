@@ -82,7 +82,7 @@ This single script executes all steps in order: Bronze infrastructure, data load
 | Goal | Priority | Status |
 | :--- | :--- | :--- |
 | Orchestration (single idempotent Python script) | High | Done |
-| Streamlit dashboard | Medium | Planned |
+| Streamlit dashboard | Medium | Done (live, deployed via Streamlit Community Cloud) |
 | BigQuery ML (forecast or clustering) | Low | Planned if time permits |
 
 ## Required Deliverables
@@ -216,12 +216,50 @@ Before selecting Pattern A, the team explored multiple approaches:
 4. Team decided Pattern A was the strongest path given timeline and reliability
 All exploratory work informed the final architecture decision and is acknowledged in the presentation.
 
+## Streamlit App
+
+- **File:** `streamlit_app.py` (repo root)
+- **Data source:** Queries Snowflake directly via `pipeline/snowflake_connect.py` (no CSVs)
+- **Cache:** 10-minute TTL on all queries (`@st.cache_data(ttl=600)`)
+- **Tables displayed:** mart_weather_demand (full), fct_trips (1,000 row sample via LIMIT), dim_zones, dim_weather
+- **Visualizations** (on the mart_weather_demand tab):
+  1. Trip demand by year and weather condition (tabbed by borough, grouped bar)
+  2. Year-over-year monthly trip volume (tabbed by borough, line chart)
+  3. Average fare by borough and year (tabbed by weather category, grouped bar)
+- **Charts:** Altair with `alt.data_transformers.disable_max_rows()`
+- **Run locally:** `streamlit run streamlit_app.py --server.port 8501 --server.headless true`
+- **Deployment:** Streamlit Community Cloud, pointed at `main` branch
+
+## Branching and Deployment (CI/CD)
+
+- **Working branch:** `orlando`
+- **GitHub Action:** `.github/workflows/merge-to-main.yml`
+- **Flow:** Push to `orlando` triggers selective file sync to `develop`, then `develop` to `main`
+- **Only these files are synced** (everything else stays on `orlando` only):
+  - `streamlit_app.py`
+  - `requirements.txt`
+  - `pipeline/snowflake_connect.py`
+  - `docs/Capstone_Architecture_PatternA.drawio`
+  - `docs/Capstone_Presentation.pptx`
+  - `docs/data_quality_report.md`
+  - `docs/pattern_a_steps.md`
+- **To add/remove files from sync:** Edit the `FILES` array in the workflow YAML
+
+## Key Design Decisions
+
+- **Data quality approach:** Flag with `IS_VALID` + `DQ_FLAG_REASON` in Silver. Never delete rows. Gold filters to `IS_VALID = TRUE`.
+- **Null handling:** Not all nulls are dropped. Many fields (passenger_count, airport_fee, congestion_surcharge) are legitimately null and still produce valid trips.
+- **Payment type:** Integer codes mapped to labels (Credit Card, Cash, No Charge, Dispute, Unknown, Voided) in Gold layer (`fct_trips.sql`), not in Streamlit.
+- **Column casing:** Silver (`stg_trips.sql`) aliases all columns to UPPERCASE. Bronze columns are lowercase from INFER_SCHEMA.
+- **Mart excludes unknown boroughs:** Zone IDs 264/265 (Unknown, N/A) filtered out of `mart_weather_demand`.
+- **fct_trips in Streamlit:** Only 1,000 rows shown (LIMIT). Full 38M+ rows remain in Snowflake for aggregation queries.
+
 ## Cut Order (if behind)
 
 1. AI enrichment / BigQuery ML
 2. Databricks lane
 3. BigQuery second destination
-4. Streamlit app
+4. ~~Streamlit app~~ (done)
 5. Additional enrichment datasets
 6. Extra dbt models beyond what question needs
 7. Narrow the analytical question itself
