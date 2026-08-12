@@ -191,7 +191,7 @@ If excluded, we would lose nearly a quarter of all trips, severely understating 
 
 **Why, and what we gave up**
 
-Too large to be an error. Average fares match credit card trips exactly. Likely represents a valid payment method that the documentation has not been updated to reflect (possibly a mobile/app payment). We keep these in all demand and revenue analysis but note that payment_type breakdowns should treat type 0 as "undocumented" rather than assigning meaning to it.
+Too large to be an error. Average fares match credit card trips exactly. Likely represents a valid payment method that the documentation has not been updated to reflect (possibly a mobile/app payment). We keep these in all demand and revenue analysis. In the Gold layer, both type 0 and type 5 are mapped to "Unknown" since neither has a confirmed meaning. This causes the mart to have fewer rows than it would with separate numeric codes (30,251 vs the previous 34,719) because groups that differed only by payment_type 0 vs 5 now merge.
 
 ---
 
@@ -271,7 +271,7 @@ If you sum individual components instead of using `total_amount`, you'll double-
 
 **How did we handle it?**
 
-The mart includes `payment_type` as a grouping dimension. Any tip analysis should be filtered to `payment_type = 1` (credit card) only. The Tableau connection guide explicitly warns about this.
+The mart includes `payment_type` as a grouping dimension (mapped to human-readable labels in Gold: Credit Card, Cash, No Charge, Dispute, Unknown, Voided). Any tip analysis should be filtered to `payment_type = 'Credit Card'` only. The Tableau connection guide explicitly warns about this.
 
 Numbers:
 - Credit card trips: avg tip = $4.22
