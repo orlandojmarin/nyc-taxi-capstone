@@ -28,3 +28,4 @@ Thumbs.db
 *.csv
 !seeds/*.csv
 !pipeline/weather_hourly.csv
+!data/*.csv
