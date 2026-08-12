@@ -7,7 +7,6 @@ warnings.filterwarnings("ignore")
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).parent / "pipeline"))
 from snowflake_connect import query_to_df
@@ -90,113 +89,8 @@ if selected_table == "mart_weather_demand":
                     11: "Nov", 12: "Dec"}
     boroughs = sorted(df["PICKUP_BOROUGH"].unique())
 
-    # --- Chart 1: Per-hour demand change during adverse weather ---
-    st.subheader("1. Weather's Effect on Taxi Demand Shifted Between 2025 and 2026")
-
-    with st.expander("How to read this chart"):
-        st.markdown("""
-        This bar chart shows the **percentage change in average hourly trips** during adverse weather
-        compared to clear weather, normalized by the number of hours in each condition.
-
-        - **Gray bars** = 2025
-        - **Navy bars** = 2026
-        - **Positive values** = demand *increases* during adverse weather (people switch to taxis)
-        - **Negative values** = demand *decreases* during adverse weather
-        - Use the **Day/Night tabs** to control for time-of-day bias (adverse weather at night would
-          naturally show lower demand regardless of weather)
-        - Hover over bars for exact percentages
-        """)
-
-    weather_dim = load_table("SELECT * FROM TECHCATALYST.AMO_GOLD.DIM_WEATHER")
-    weather_dim["YEAR"] = weather_dim["WEATHER_DATE"].apply(
-        lambda x: x.year if hasattr(x, "year") else int(str(x)[:4])
-    )
-    weather_dim["IS_NIGHT"] = weather_dim["WEATHER_HOUR"].apply(
-        lambda h: h >= 20 or h < 6
-    )
-
-    def compute_weather_changes(mart_df, weather_ref, night_filter):
-        """Compute per-hour % change for each borough/year, filtered by time of day."""
-        if night_filter is not None:
-            wf = weather_ref[weather_ref["IS_NIGHT"] == night_filter]
-            mf = mart_df[mart_df["IS_NIGHT"] == night_filter]
-        else:
-            wf = weather_ref
-            mf = mart_df
-        results = []
-        for borough in boroughs:
-            bdf = mf[mf["PICKUP_BOROUGH"] == borough]
-            for year in [2025, 2026]:
-                clear_hrs = len(wf[(wf["YEAR"] == year) & (wf["IS_ADVERSE_WEATHER"] == False)])
-                adverse_hrs = len(wf[(wf["YEAR"] == year) & (wf["IS_ADVERSE_WEATHER"] == True)])
-                clear_trips = bdf[(bdf["PICKUP_YEAR"] == year) & (bdf["IS_ADVERSE_WEATHER"] == False)]["TRIP_COUNT"].sum()
-                adverse_trips = bdf[(bdf["PICKUP_YEAR"] == year) & (bdf["IS_ADVERSE_WEATHER"] == True)]["TRIP_COUNT"].sum()
-                avg_clear = clear_trips / clear_hrs if clear_hrs > 0 else 0
-                avg_adverse = adverse_trips / adverse_hrs if adverse_hrs > 0 else 0
-                pct_change = ((avg_adverse - avg_clear) / avg_clear * 100) if avg_clear > 0 else 0
-                results.append({"borough": borough, "year": year, "pct_change": pct_change})
-        return results
-
-    def render_chart1(borough_changes, subtitle):
-        changes_2025 = [d for d in borough_changes if d["year"] == 2025]
-        changes_2026 = [d for d in borough_changes if d["year"] == 2026]
-        fig = go.Figure()
-        fig.add_trace(go.Bar(
-            x=[d["borough"] for d in changes_2025],
-            y=[d["pct_change"] for d in changes_2025],
-            name="2025",
-            marker_color=COLOR_2025,
-            marker_line=dict(width=1, color="black"),
-            hovertemplate="<b>%{x}</b><br>2025 Change: %{y:+.2f}%<extra></extra>"
-        ))
-        fig.add_trace(go.Bar(
-            x=[d["borough"] for d in changes_2026],
-            y=[d["pct_change"] for d in changes_2026],
-            name="2026",
-            marker_color=COLOR_2026,
-            marker_line=dict(width=1, color="black"),
-            hovertemplate="<b>%{x}</b><br>2026 Change: %{y:+.2f}%<extra></extra>"
-        ))
-        fig.add_hline(y=0, line_dash="dash", line_color="gray")
-        fig.update_layout(
-            title=dict(text=f"Hourly Demand Change During Adverse Weather ({subtitle})",
-                       x=0.5, xanchor="center", font=dict(size=20, color="black")),
-            barmode="group",
-            height=500,
-            plot_bgcolor="white",
-            paper_bgcolor="#f5f5f5",
-            font=dict(color="black", size=14),
-            margin=dict(l=50, r=50, t=70, b=50),
-            xaxis=dict(title="Borough", title_font=dict(size=16), tickfont=dict(size=14)),
-            yaxis=dict(title="% Change in Trips/Hour (Adverse vs. Clear)",
-                       title_font=dict(size=16), tickfont=dict(size=14), ticksuffix="%",
-                       zeroline=True),
-            legend=dict(font=dict(size=14))
-        )
-        st.plotly_chart(fig, use_container_width=True)
-
-    tab_day, tab_night = st.tabs(["Day (6 AM - 8 PM)", "Night (8 PM - 6 AM)"])
-    with tab_day:
-        day_changes = compute_weather_changes(df, weather_dim, night_filter=False)
-        render_chart1(day_changes, "Daytime Hours")
-    with tab_night:
-        night_changes = compute_weather_changes(df, weather_dim, night_filter=True)
-        render_chart1(night_changes, "Nighttime Hours")
-
-    with st.expander("Show interpretation"):
-        st.markdown("""
-        Splitting by time of day controls for the possibility that adverse weather clusters at night
-        (when demand is naturally lower). During **daytime hours**, the 2025 pattern holds: adverse
-        weather *increased* taxi demand in Manhattan and Brooklyn as riders switched from walking or
-        transit. In 2026, daytime adverse weather drove demand *down*, suggesting a behavioral shift.
-        The **nighttime tab** shows whether this pattern persists when baseline demand is already low,
-        helping confirm the finding is not simply a time-of-day artifact.
-        """)
-
-    st.markdown("---")
-
-    # --- Chart 2: Year-over-year monthly trip volume by borough ---
-    st.subheader("2. Monthly Trip Volume Shows Consistent Year-over-Year Growth")
+    # --- Chart 1: Year-over-year monthly trip volume by borough ---
+    st.subheader("1. Monthly Trip Volume Shows Consistent Year-over-Year Growth")
 
     with st.expander("How to read this chart"):
         st.markdown("""
@@ -208,8 +102,8 @@ if selected_table == "mart_weather_demand":
         - Each tab shows one borough
         """)
 
-    tabs2 = st.tabs(boroughs)
-    for tab, borough in zip(tabs2, boroughs):
+    tabs1 = st.tabs(boroughs)
+    for tab, borough in zip(tabs1, boroughs):
         with tab:
             borough_df = df[df["PICKUP_BOROUGH"] == borough].copy()
             monthly = borough_df.groupby(
@@ -260,6 +154,110 @@ if selected_table == "mart_weather_demand":
 
     st.markdown("---")
 
+    # --- Chart 2: Per-hour demand change during adverse weather ---
+    st.subheader("2. Weather's Effect on Taxi Demand Shifted Between 2025 and 2026")
+
+    with st.expander("How to read this chart"):
+        st.markdown("""
+        This bar chart shows the **percentage change in average hourly trips** during adverse weather
+        compared to clear weather, normalized by the number of hours in each condition.
+
+        - **Gray bars** = 2025
+        - **Navy bars** = 2026
+        - **Positive values** = demand *increases* during adverse weather (people switch to taxis)
+        - **Negative values** = demand *decreases* during adverse weather
+        - Use the **Day/Night tabs** to control for time-of-day bias (adverse weather at night would
+          naturally show lower demand regardless of weather)
+        - Hover over bars for exact percentages
+        """)
+
+    weather_dim = load_table("SELECT * FROM TECHCATALYST.AMO_GOLD.DIM_WEATHER")
+    weather_dim["YEAR"] = weather_dim["WEATHER_DATE"].apply(
+        lambda x: x.year if hasattr(x, "year") else int(str(x)[:4])
+    )
+    weather_dim["IS_NIGHT"] = weather_dim["WEATHER_HOUR"].apply(
+        lambda h: h >= 20 or h < 6
+    )
+
+    def compute_weather_changes(mart_df, weather_ref, night_filter):
+        if night_filter is not None:
+            wf = weather_ref[weather_ref["IS_NIGHT"] == night_filter]
+            mf = mart_df[mart_df["IS_NIGHT"] == night_filter]
+        else:
+            wf = weather_ref
+            mf = mart_df
+        results = []
+        for borough in boroughs:
+            bdf = mf[mf["PICKUP_BOROUGH"] == borough]
+            for year in [2025, 2026]:
+                clear_hrs = len(wf[(wf["YEAR"] == year) & (wf["IS_ADVERSE_WEATHER"] == False)])
+                adverse_hrs = len(wf[(wf["YEAR"] == year) & (wf["IS_ADVERSE_WEATHER"] == True)])
+                clear_trips = bdf[(bdf["PICKUP_YEAR"] == year) & (bdf["IS_ADVERSE_WEATHER"] == False)]["TRIP_COUNT"].sum()
+                adverse_trips = bdf[(bdf["PICKUP_YEAR"] == year) & (bdf["IS_ADVERSE_WEATHER"] == True)]["TRIP_COUNT"].sum()
+                avg_clear = clear_trips / clear_hrs if clear_hrs > 0 else 0
+                avg_adverse = adverse_trips / adverse_hrs if adverse_hrs > 0 else 0
+                pct_change = ((avg_adverse - avg_clear) / avg_clear * 100) if avg_clear > 0 else 0
+                results.append({"borough": borough, "year": year, "pct_change": round(pct_change, 2)})
+        return results
+
+    def render_weather_chart(borough_changes, subtitle):
+        changes_2025 = [d for d in borough_changes if d["year"] == 2025]
+        changes_2026 = [d for d in borough_changes if d["year"] == 2026]
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            x=[d["borough"] for d in changes_2025],
+            y=[d["pct_change"] for d in changes_2025],
+            name="2025",
+            marker_color=COLOR_2025,
+            marker_line=dict(width=1, color="black"),
+            hovertemplate="<b>%{x}</b><br>2025 Change: %{y:+.2f}%<extra></extra>"
+        ))
+        fig.add_trace(go.Bar(
+            x=[d["borough"] for d in changes_2026],
+            y=[d["pct_change"] for d in changes_2026],
+            name="2026",
+            marker_color=COLOR_2026,
+            marker_line=dict(width=1, color="black"),
+            hovertemplate="<b>%{x}</b><br>2026 Change: %{y:+.2f}%<extra></extra>"
+        ))
+        fig.add_hline(y=0, line_dash="dash", line_color="gray")
+        fig.update_layout(
+            title=dict(text=f"Hourly Demand Change During Adverse Weather ({subtitle})",
+                       x=0.5, xanchor="center", font=dict(size=20, color="black")),
+            barmode="group",
+            height=500,
+            plot_bgcolor="white",
+            paper_bgcolor="#f5f5f5",
+            font=dict(color="black", size=14),
+            margin=dict(l=50, r=50, t=70, b=50),
+            xaxis=dict(title="Borough", title_font=dict(size=16), tickfont=dict(size=14)),
+            yaxis=dict(title="% Change in Trips/Hour (Adverse vs. Clear)",
+                       title_font=dict(size=16), tickfont=dict(size=14), ticksuffix="%",
+                       zeroline=True),
+            legend=dict(font=dict(size=14))
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    tab_day, tab_night = st.tabs(["Day (6 AM - 8 PM)", "Night (8 PM - 6 AM)"])
+    with tab_day:
+        day_changes = compute_weather_changes(df, weather_dim, night_filter=False)
+        render_weather_chart(day_changes, "Daytime Hours")
+    with tab_night:
+        night_changes = compute_weather_changes(df, weather_dim, night_filter=True)
+        render_weather_chart(night_changes, "Nighttime Hours")
+
+    with st.expander("Show interpretation"):
+        st.markdown("""
+        Splitting by time of day controls for the possibility that adverse weather clusters at night
+        (when demand is naturally lower). During **daytime hours**, the 2025 pattern holds: adverse
+        weather *increased* taxi demand in Manhattan and Brooklyn as riders switched from walking or
+        transit. In 2026, daytime adverse weather drove demand *down*, suggesting a behavioral shift.
+        The **nighttime tab** shows whether this pattern persists when baseline demand is already low,
+        helping confirm the finding is not simply a time-of-day artifact.
+        """)
+
+    st.markdown("---")
+
     # --- Chart 3: Average fare by borough, tabbed by weather category ---
     st.subheader("3. Average Fares Remain Stable Across Weather Conditions")
 
@@ -270,15 +268,15 @@ if selected_table == "mart_weather_demand":
         - **Gray bars** = 2025
         - **Navy bars** = 2026
         - Each tab shows a different weather category
-        - Value labels show exact dollar amounts above each bar
+        - Hover over bars for exact dollar amounts
         """)
 
     weather_cats = sorted(df["WEATHER_CATEGORY"].unique())
     tabs3 = st.tabs(weather_cats)
     for tab, weather_cat in zip(tabs3, weather_cats):
         with tab:
-            weather_df = df[df["WEATHER_CATEGORY"] == weather_cat].copy()
-            fare_agg = weather_df.groupby(
+            wcat_df = df[df["WEATHER_CATEGORY"] == weather_cat].copy()
+            fare_agg = wcat_df.groupby(
                 ["PICKUP_BOROUGH", "PICKUP_YEAR"], as_index=False
             ).agg(total_rev=("TOTAL_REVENUE", "sum"), total_trips=("TRIP_COUNT", "sum"))
             fare_agg["AVG_FARE"] = fare_agg["total_rev"] / fare_agg["total_trips"]
@@ -294,29 +292,44 @@ if selected_table == "mart_weather_demand":
                          if len(b_2026[b_2026["PICKUP_BOROUGH"] == b]) > 0 else 0
                          for b in borough_list]
 
-            fig, ax = plt.subplots(figsize=(10, 6))
-            x = range(len(borough_list))
-            width = 0.35
-            x_2025 = [pos - width/2 for pos in x]
-            x_2026 = [pos + width/2 for pos in x]
-
-            bars1 = ax.bar(x_2025, vals_2025, width, label="2025", color=COLOR_2025, edgecolor="black")
-            bars2 = ax.bar(x_2026, vals_2026, width, label="2026", color=COLOR_2026, edgecolor="black")
-
-            for bar in list(bars1) + list(bars2):
-                height = bar.get_height()
-                ax.annotate(f'${height:.2f}',
-                            xy=(bar.get_x() + bar.get_width()/2, height),
-                            xytext=(0, 5), textcoords="offset points",
-                            ha='center', va='bottom', fontsize=9)
-
-            ax.set_ylabel("Avg Fare per Trip ($)")
-            ax.set_title(f"Average Fare by Borough ({weather_cat})")
-            ax.set_xticks(x)
-            ax.set_xticklabels(borough_list)
-            ax.legend()
-            st.pyplot(fig)
-            plt.close(fig)
+            fig = go.Figure()
+            fig.add_trace(go.Bar(
+                x=borough_list,
+                y=vals_2025,
+                name="2025",
+                marker_color=COLOR_2025,
+                marker_line=dict(width=1, color="black"),
+                text=[f"${v:.2f}" for v in vals_2025],
+                textposition="outside",
+                textfont=dict(size=11),
+                hovertemplate="<b>%{x}</b><br>2025 Avg Fare: $%{y:.2f}<extra></extra>"
+            ))
+            fig.add_trace(go.Bar(
+                x=borough_list,
+                y=vals_2026,
+                name="2026",
+                marker_color=COLOR_2026,
+                marker_line=dict(width=1, color="black"),
+                text=[f"${v:.2f}" for v in vals_2026],
+                textposition="outside",
+                textfont=dict(size=11),
+                hovertemplate="<b>%{x}</b><br>2026 Avg Fare: $%{y:.2f}<extra></extra>"
+            ))
+            fig.update_layout(
+                title=dict(text=f"Average Fare by Borough ({weather_cat})",
+                           x=0.5, xanchor="center", font=dict(size=20, color="black")),
+                barmode="group",
+                height=500,
+                plot_bgcolor="white",
+                paper_bgcolor="#f5f5f5",
+                font=dict(color="black", size=14),
+                margin=dict(l=50, r=50, t=70, b=80),
+                xaxis=dict(title="Borough", title_font=dict(size=16), tickfont=dict(size=14)),
+                yaxis=dict(title="Avg Fare per Trip ($)", title_font=dict(size=16),
+                           tickfont=dict(size=14), tickprefix="$"),
+                legend=dict(font=dict(size=14))
+            )
+            st.plotly_chart(fig, use_container_width=True)
 
     with st.expander("Show interpretation"):
         st.markdown("""
