@@ -7,6 +7,7 @@ warnings.filterwarnings("ignore")
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).parent / "pipeline"))
 from snowflake_connect import query_to_df
