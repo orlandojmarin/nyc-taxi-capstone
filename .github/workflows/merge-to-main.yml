@@ -1,25 +1,62 @@
-name: Auto-merge orlando to develop to main
+name: Sync selected files from orlando to develop to main
 
 on:
   push:
     branches:
       - orlando
 
+permissions:
+  contents: write
+
 jobs:
-  merge:
+  sync:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Merge orlando into develop, then develop into main
+      - name: Sync selected files to develop then main
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
+
+          FILES=(
+            "streamlit_app.py"
+            "requirements.txt"
+            "pipeline/snowflake_connect.py"
+            "docs/Capstone_Architecture_PatternA.drawio"
+            "docs/Capstone_Presentation.pptx"
+            "docs/data_quality_report.md"
+            "docs/pattern_a_steps.md"
+          )
+
+          # Sync to develop
           git checkout develop
-          git merge origin/orlando --no-edit
-          git push origin develop
+          for f in "${FILES[@]}"; do
+            dir=$(dirname "$f")
+            mkdir -p "$dir"
+            git checkout orlando -- "$f"
+          done
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to sync to develop"
+          else
+            git commit -m "Sync selected files from orlando"
+            git push origin develop
+          fi
+
+          # Sync to main
           git checkout main
-          git merge develop --no-edit
-          git push origin main
+          for f in "${FILES[@]}"; do
+            dir=$(dirname "$f")
+            mkdir -p "$dir"
+            git checkout develop -- "$f"
+          done
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to sync to main"
+          else
+            git commit -m "Sync selected files from develop"
+            git push origin main
+          fi
