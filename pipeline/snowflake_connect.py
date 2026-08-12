@@ -26,7 +26,13 @@ PROFILE = "DEV"
 
 
 def load_params(config_path=CONFIG_PATH, profile=PROFILE):
-    """Read connection parameters from snow.cfg."""
+    """Read connection params from Streamlit secrets (cloud) or snow.cfg (local)."""
+    try:
+        import streamlit as st
+        if hasattr(st, "secrets") and "snowflake" in st.secrets:
+            return dict(st.secrets["snowflake"])
+    except Exception:
+        pass
     config = ConfigParser()
     if not config.read(config_path):
         raise FileNotFoundError(
