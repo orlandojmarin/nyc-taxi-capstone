@@ -1,0 +1,170 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Pattern A - ELT Warehouse-Centric" id="pattern-a">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Architecture: Pattern A - ELT Warehouse-Centric Pipeline (Team AMO)" style="text;html=1;align=center;verticalAlign=middle;fontStyle=1;fontSize=18;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="400" y="15" width="800" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="&quot;How does adverse weather affect taxi demand across NYC boroughs, and how did those patterns shift between 2025 and 2026?&quot;" style="text;html=1;align=center;verticalAlign=middle;fontStyle=2;fontSize=11;fontColor=#555555;" vertex="1" parent="1">
+          <mxGeometry x="350" y="48" width="900" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="z_source" value="DATA SOURCE" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;fontColor=#B22222;fillColor=#FFF8F0;strokeColor=#DDD8D2;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="200" height="620" as="geometry" />
+        </mxCell>
+        <mxCell id="z_bronze" value="AMO_BRONZE (Raw Landing)" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;fontColor=#8B4513;fillColor=#F5E6D3;strokeColor=#CD7F32;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="280" y="80" width="260" height="620" as="geometry" />
+        </mxCell>
+        <mxCell id="z_silver" value="AMO_SILVER (Cleaned, Conformed)" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;fontColor=#555555;fillColor=#E8E8E8;strokeColor=#A9A9A9;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="80" width="280" height="620" as="geometry" />
+        </mxCell>
+        <mxCell id="z_gold" value="AMO_GOLD (Marts)" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;fontColor=#996515;fillColor=#FFF8DC;strokeColor=#DAA520;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="80" width="280" height="620" as="geometry" />
+        </mxCell>
+        <mxCell id="z_serve" value="SERVE" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;fontColor=#6A1B9A;fillColor=#F5F0FF;strokeColor=#DDD8D2;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="80" width="200" height="620" as="geometry" />
+        </mxCell>
+        <mxCell id="src_yellow" value="s3://techcatalyst-de-2026/&#10;raw/yellow_taxi/&#10;(10 Parquet files, 38.8M rows)" style="shape=document;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B22222;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="55" y="130" width="170" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="src_green" value="s3://techcatalyst-de-2026/&#10;raw/green_taxi/&#10;(10 Parquet files, 465K rows)" style="shape=document;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B22222;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="55" y="230" width="170" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="src_lookup" value="s3://techcatalyst-de-2026/&#10;raw/taxi_lookup/&#10;taxi_zone_lookup.csv&#10;(265 zones)" style="shape=document;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B22222;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="55" y="330" width="170" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="src_weather" value="Open-Meteo API&#10;Historical Weather&#10;(hourly, NYC Central Park)&#10;Jan 2025 - May 2026" style="shape=document;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B22222;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="55" y="430" width="170" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="src_bucket_label" value="S3 RAW Bucket&#10;(read-only, provided)" style="text;html=1;align=center;fontSize=9;fontColor=#B22222;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="65" y="520" width="150" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="src_weather_label" value="External API&#10;(free, no key required)" style="text;html=1;align=center;fontSize=9;fontColor=#B22222;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="65" y="545" width="150" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="stage_box" value="Snowflake External Stage&#10;capstone_raw_stage&#10;&#10;FILE_FORMAT = PARQUET&#10;INFER_SCHEMA + COPY INTO&#10;MATCH_BY_COLUMN_NAME" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAEBD7;strokeColor=#CD7F32;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="295" y="120" width="230" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="brz_yellow" value="AMO_BRONZE.&#10;yellow_raw&#10;(38,759,706 rows)" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#FAEBD7;strokeColor=#CD7F32;fontSize=10;size=10;" vertex="1" parent="1">
+          <mxGeometry x="310" y="250" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="brz_green" value="AMO_BRONZE.&#10;green_raw&#10;(465,029 rows)" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#FAEBD7;strokeColor=#CD7F32;fontSize=10;size=10;" vertex="1" parent="1">
+          <mxGeometry x="310" y="350" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="brz_lookup" value="AMO_BRONZE.&#10;zone_lookup&#10;(265 rows)" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#FAEBD7;strokeColor=#CD7F32;fontSize=10;size=10;" vertex="1" parent="1">
+          <mxGeometry x="310" y="450" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="python_connector" value="Python Connector&#10;(snowflake-connector-python)&#10;02_fetch_weather.py" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAEBD7;strokeColor=#CD7F32;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="295" y="530" width="230" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="brz_weather" value="AMO_BRONZE.&#10;weather_hourly&#10;(7,248 rows)" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#FAEBD7;strokeColor=#CD7F32;fontSize=10;size=10;" vertex="1" parent="1">
+          <mxGeometry x="310" y="600" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="brz_note" value="Raw landing: source-shaped,&#10;minimal typing, no transforms" style="text;html=1;align=center;fontSize=9;fontColor=#8B4513;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="320" y="670" width="180" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="dbt_silver_label" value="dbt Core 1.12.0&#10;(staging models, materialized as tables)" style="text;html=1;align=center;fontSize=10;fontColor=#555555;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="600" y="105" width="240" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="slv_trips" value="AMO_SILVER.&#10;stg_trips&#10;&#10;Yellow + Green unioned&#10;Timestamps conformed&#10;taxi_type, trip_duration&#10;pickup_hour, is_rush_hour&#10;is_valid + dq_flag_reason&#10;39,224,735 rows" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#D3D3D3;strokeColor=#A9A9A9;fontSize=10;size=10;" vertex="1" parent="1">
+          <mxGeometry x="605" y="150" width="230" height="145" as="geometry" />
+        </mxCell>
+        <mxCell id="slv_zones" value="AMO_SILVER.&#10;stg_zones&#10;(265 rows, snake_case)" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#D3D3D3;strokeColor=#A9A9A9;fontSize=10;size=10;" vertex="1" parent="1">
+          <mxGeometry x="605" y="320" width="230" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="slv_weather" value="AMO_SILVER.&#10;stg_weather&#10;(weather_category,&#10;is_adverse_weather, 7,248 rows)" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#D3D3D3;strokeColor=#A9A9A9;fontSize=10;size=10;" vertex="1" parent="1">
+          <mxGeometry x="605" y="400" width="230" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="slv_transforms" value="Transformations:&#10;&#x2022; Union Yellow + Green&#10;&#x2022; Rename lpep/tpep to pickup/dropoff&#10;&#x2022; Derive time columns (hour, dow, month)&#10;&#x2022; Derive weather_category&#10;&#x2022; Flag invalid records (is_valid)&#10;&#10;Tests (31 pass, 1 warn):&#10;&#x2022; not_null, unique, accepted_values&#10;&#x2022; relationships (zone FK)" style="text;html=1;align=left;fontSize=9;fontColor=#555555;" vertex="1" parent="1">
+          <mxGeometry x="605" y="485" width="230" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="dbt_gold_label" value="dbt Core 1.12.0&#10;(mart models, materialized as tables)" style="text;html=1;align=center;fontSize=10;fontColor=#996515;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="920" y="105" width="240" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="gld_fct" value="AMO_GOLD.&#10;fct_trips&#10;&#10;Valid trips joined to zones + weather&#10;All revenue columns&#10;Borough, weather_category&#10;38,053,445 rows" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFD700;strokeColor=#DAA520;fontSize=10;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="920" y="150" width="240" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="gld_mart" value="AMO_GOLD.&#10;mart_weather_demand&#10;&#10;Aggregated by borough, weather,&#10;year, month, hour, payment_type&#10;Demand + revenue metrics&#10;34,719 rows" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFD700;strokeColor=#DAA520;fontSize=10;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="920" y="290" width="240" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="gld_dim_zones" value="AMO_GOLD.&#10;dim_zones&#10;(borough, zone_name, 265 rows)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEC8B;strokeColor=#DAA520;fontSize=10;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="920" y="430" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="gld_dim_weather" value="AMO_GOLD.&#10;dim_weather&#10;(hourly conditions, 7,248 rows)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEC8B;strokeColor=#DAA520;fontSize=10;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="920" y="510" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="gld_tests" value="16 tests, all passing" style="text;html=1;align=center;fontSize=9;fontColor=#996515;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="960" y="580" width="160" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="srv_tableau" value="Tableau / Looker&#10;&#10;Connected to&#10;AMO_GOLD.&#10;mart_weather_demand&#10;&#10;Borough-level weather&#10;demand dashboard&#10;YoY comparison" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8EAF6;strokeColor=#6A1B9A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="140" width="160" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="srv_streamlit" value="Streamlit App&#10;(stretch goal)&#10;&#10;Interactive filters:&#10;borough, weather,&#10;year, payment type" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8EAF6;strokeColor=#6A1B9A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="330" width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="srv_analysts" value="Analyst Queries&#10;&#10;Snowflake SQL Worksheet&#10;Ad-hoc exploration&#10;DQ validation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8EAF6;strokeColor=#6A1B9A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="470" width="160" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="orch_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#455A64;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="720" width="740" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="orch_title" value="Orchestration: python pipeline/orchestrate.py (single command, re-runnable, idempotent)" style="text;html=1;align=left;fontSize=11;fontStyle=1;fontColor=#455A64;" vertex="1" parent="1">
+          <mxGeometry x="290" y="725" width="400" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="task1" value="Step 1: Bronze infra&#10;+ COPY INTO AMO_BRONZE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#455A64;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="300" y="750" width="170" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="task2" value="Step 2: Weather API&#10;fetch + load" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#455A64;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="510" y="750" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="task3" value="Step 3: dbt run&#10;+ dbt test + verify" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#455A64;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="720" y="750" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="a_task1_task2" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#455A64;strokeWidth=2;" edge="1" parent="1" source="task1" target="task2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_task2_task3" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#455A64;strokeWidth=2;" edge="1" parent="1" source="task2" target="task3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_yellow_stage" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#CD7F32;strokeWidth=2;" edge="1" parent="1" source="src_yellow" target="stage_box"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_green_stage" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#CD7F32;strokeWidth=2;" edge="1" parent="1" source="src_green" target="stage_box"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_lookup_brz" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#CD7F32;strokeWidth=1.5;" edge="1" parent="1" source="src_lookup" target="brz_lookup"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_stage_brz_y" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#CD7F32;strokeWidth=2;" edge="1" parent="1" source="stage_box" target="brz_yellow"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_stage_brz_g" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#CD7F32;strokeWidth=2;" edge="1" parent="1" source="stage_box" target="brz_green"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_brzy_slv" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#A9A9A9;strokeWidth=2;" edge="1" parent="1" source="brz_yellow" target="slv_trips"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_brzg_slv" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#A9A9A9;strokeWidth=2;" edge="1" parent="1" source="brz_green" target="slv_trips"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_brzl_slvz" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#A9A9A9;strokeWidth=1.5;" edge="1" parent="1" source="brz_lookup" target="slv_zones"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_brz_weather_slv" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#A9A9A9;strokeWidth=1.5;" edge="1" parent="1" source="brz_weather" target="slv_weather"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_slv_gld_fct" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#DAA520;strokeWidth=2;" edge="1" parent="1" source="slv_trips" target="gld_fct"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_slvz_gld_fct" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#DAA520;strokeWidth=1.5;dashed=1;" edge="1" parent="1" source="slv_zones" target="gld_fct"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_slvw_gld_fct" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#DAA520;strokeWidth=1.5;dashed=1;" edge="1" parent="1" source="slv_weather" target="gld_fct"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_fct_mart" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#DAA520;strokeWidth=2;" edge="1" parent="1" source="gld_fct" target="gld_mart"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_slvz_dimz" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#DAA520;strokeWidth=1.5;" edge="1" parent="1" source="slv_zones" target="gld_dim_zones"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_slvw_dimw" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#DAA520;strokeWidth=1.5;" edge="1" parent="1" source="slv_weather" target="gld_dim_weather"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_mart_tableau" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#6A1B9A;strokeWidth=2;" edge="1" parent="1" source="gld_mart" target="srv_tableau"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_mart_streamlit" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#6A1B9A;strokeWidth=2;" edge="1" parent="1" source="gld_mart" target="srv_streamlit"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_fct_analysts" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#6A1B9A;strokeWidth=1.5;dashed=1;" edge="1" parent="1" source="gld_fct" target="srv_analysts"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_weather_python" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#CD7F32;strokeWidth=1.5;" edge="1" parent="1" source="src_weather" target="python_connector"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a_python_brz_weather" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#CD7F32;strokeWidth=1.5;" edge="1" parent="1" source="python_connector" target="brz_weather"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="legend_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CCCCCC;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="600" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="legend_title" value="LEGEND" style="text;html=1;align=left;fontStyle=1;fontSize=10;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="605" width="60" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="legend_ingest" value="&#x2501;&#x2501; Ingestion (bronze)" style="text;html=1;align=left;fontSize=9;fontColor=#CD7F32;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="625" width="180" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="legend_dbt_s" value="&#x2501;&#x2501; dbt staging (silver)" style="text;html=1;align=left;fontSize=9;fontColor=#A9A9A9;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="641" width="180" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="legend_dbt_g" value="&#x2501;&#x2501; dbt marts (gold)" style="text;html=1;align=left;fontSize=9;fontColor=#DAA520;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="657" width="180" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="legend_serve" value="&#x2501;&#x2501; Serving (purple)" style="text;html=1;align=left;fontSize=9;fontColor=#6A1B9A;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="673" width="180" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="summary" value="PATTERN A SUMMARY: ELT warehouse-centric. Raw Parquet from S3 loaded into Snowflake AMO_BRONZE via external stage + COPY INTO. Weather enrichment from Open-Meteo API loaded via Python connector. All transformation in Snowflake via dbt Core 1.12.0: staging models union Yellow and Green, reconcile schemas, derive time and weather features, flag data quality issues. Mart models join trips to zones and weather, filter to valid records, aggregate demand and revenue by borough/weather/time for YoY analysis. Team-scoped schemas (AMO_*) prevent cross-team interference." style="text;html=1;align=left;verticalAlign=top;fontSize=9;fontColor=#444444;spacingLeft=5;spacingRight=5;" vertex="1" parent="1">
+          <mxGeometry x="40" y="820" width="1380" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
