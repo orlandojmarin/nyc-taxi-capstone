@@ -89,6 +89,8 @@ if selected_table == "mart_weather_demand":
     MONTH_ORDER = [MONTH_LABELS[m] for m in sorted(MONTH_LABELS.keys())]
     boroughs = sorted(df["PICKUP_BOROUGH"].unique())
 
+    YEAR_COLOR = alt.Scale(domain=["2025", "2026"], range=["#1a2456", "#a0a0a0"])
+
     # --- Chart 1: Trip demand per borough tab, grouped by year and weather ---
     st.subheader("1. Trip Demand by Year and Weather Condition")
     tabs1 = st.tabs(boroughs)
@@ -106,13 +108,10 @@ if selected_table == "mart_weather_demand":
                 alt.Chart(grouped)
                 .mark_bar()
                 .encode(
-                    x=alt.X("Year:N", title="Year"),
+                    x=alt.X("Weather:N", title="Weather"),
                     y=alt.Y("TRIP_COUNT:Q", title="Total Trips"),
-                    color=alt.Color("Weather:N", scale=alt.Scale(
-                        domain=["Clear", "Adverse"],
-                        range=["#4c78a8", "#e45756"]
-                    )),
-                    xOffset="Weather:N",
+                    color=alt.Color("Year:N", scale=YEAR_COLOR),
+                    xOffset="Year:N",
                 )
                 .properties(height=400, title=borough)
             )
@@ -137,7 +136,7 @@ if selected_table == "mart_weather_demand":
                             sort=[m for m in MONTH_ORDER if m in monthly["Month"].values]),
                     y=alt.Y("TRIP_COUNT:Q", title="Total Trips",
                             scale=alt.Scale(zero=False)),
-                    color=alt.Color("Year:N", title="Year"),
+                    color=alt.Color("Year:N", title="Year", scale=YEAR_COLOR),
                 )
                 .properties(height=400, title=borough)
             )
@@ -161,10 +160,7 @@ if selected_table == "mart_weather_demand":
                 .encode(
                     x=alt.X("PICKUP_BOROUGH:N", title="Borough"),
                     y=alt.Y("AVG_FARE:Q", title="Avg Fare per Trip ($)"),
-                    color=alt.Color("Year:N", scale=alt.Scale(
-                        domain=["2025", "2026"],
-                        range=["#4c78a8", "#f58518"]
-                    )),
+                    color=alt.Color("Year:N", scale=YEAR_COLOR),
                     xOffset="Year:N",
                 )
                 .properties(height=400, title=weather_cat)
