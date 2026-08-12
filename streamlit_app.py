@@ -133,7 +133,7 @@ if selected_table == "mart_weather_demand":
         name="2025",
         marker_color=COLOR_2025,
         marker_line=dict(width=1, color="black"),
-        hovertemplate="<b>%{x}</b><br>2025 Change: %{y:+.1f}%<extra></extra>"
+        hovertemplate="<b>%{x}</b><br>2025 Change: %{y:+.2f}%<extra></extra>"
     ))
     fig.add_trace(go.Bar(
         x=[d["borough"] for d in changes_2026],
@@ -141,7 +141,7 @@ if selected_table == "mart_weather_demand":
         name="2026",
         marker_color=COLOR_2026,
         marker_line=dict(width=1, color="black"),
-        hovertemplate="<b>%{x}</b><br>2026 Change: %{y:+.1f}%<extra></extra>"
+        hovertemplate="<b>%{x}</b><br>2026 Change: %{y:+.2f}%<extra></extra>"
     ))
     fig.add_hline(y=0, line_dash="dash", line_color="gray")
     fig.update_layout(
