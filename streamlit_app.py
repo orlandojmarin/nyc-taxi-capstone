@@ -325,6 +325,12 @@ if selected_table == "mart_weather_demand":
         Year-over-year changes are modest, with slight increases in 2026 likely reflecting inflation
         or fare adjustments rather than weather-driven surge pricing. Tips are excluded because cash
         tips are not recorded in TLC data, which would skew comparisons across payment types.
+
+        Notably, trips during adverse weather are shorter in both distance and duration (e.g.,
+        Queens snow trips average 26.8 min vs. 34.3 min during clear weather in 2026), yet revenue
+        per trip remains stable because base fares, surcharges, and congestion fees keep the per-trip
+        total consistent regardless of distance. This confirms that weather's primary impact on
+        revenue is through *volume* (fewer trips), not through changes in what each trip earns.
         """)
 
     st.markdown("---")

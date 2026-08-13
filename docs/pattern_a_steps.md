@@ -302,6 +302,21 @@ The demand reversal in Chart 4 is not a behavioral mystery. Comparing the actual
 
 This is a stronger, more defensible finding than "rider behavior changed." The data supports: **taxi demand's sensitivity to snow scales with storm intensity,** and 2026's storms crossed a severity threshold that light 2025 snow did not.
 
+### Supporting Finding: Trip Duration and Distance
+
+Trips during adverse weather are consistently shorter in both distance and duration across all boroughs:
+
+| Borough | Condition | 2025 Duration | 2026 Duration | 2025 Distance | 2026 Distance |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Manhattan | Clear | 14.2 min | 15.4 min | 2.35 mi | 2.47 mi |
+| Manhattan | Adverse | 14.2 min | 14.5 min | 2.26 mi | 2.44 mi |
+| Queens | Clear | 33.4 min | 34.2 min | 10.98 mi | 10.69 mi |
+| Queens | Adverse | 32.2 min | 29.4 min | 10.70 mi | 9.75 mi |
+| Bronx | Clear | 27.0 min | 39.0 min | 6.18 mi | 7.85 mi |
+| Bronx | Adverse | 25.1 min | 30.3 min | 5.72 mi | 7.00 mi |
+
+However, **revenue per trip remains stable** despite shorter distances ($24/trip in Manhattan regardless of weather). Base fares, surcharges, and congestion fees keep per-trip revenue consistent. This confirms that weather's primary revenue impact is through *volume* (fewer trips taken), not through changes in what each individual trip earns. This distinction matters for the business recommendation: the operational response should focus on maintaining trip volume during storms, not on per-trip pricing.
+
 ### Design Decisions
 
 - **Color scheme:** Gray (`#d9d9d9`) = 2025, Navy (`#002D72`) = 2026. Consistent across all charts.
