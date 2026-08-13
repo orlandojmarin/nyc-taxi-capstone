@@ -41,7 +41,7 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("\U0001f695 NYC Taxi Capstone: Data Explorer")
+st.title("NYC Taxi Capstone: Data Explorer")
 st.markdown(
     "**Team AMO** (Ariana Lopez, Maryam Choudhury, Orlando Marin) | "
     "Analytical Question: *How does adverse weather affect taxi "
