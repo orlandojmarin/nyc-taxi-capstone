@@ -26,9 +26,9 @@ st.markdown(
     "demand across NYC boroughs, and how did those patterns shift between 2025 and 2026?*"
 )
 
-BG_COLOR = "rgba(0,0,0,0)"
-PAPER_COLOR = "rgba(0,0,0,0)"
-TEXT_COLOR = None
+BG_COLOR = "white"
+PAPER_COLOR = "#f5f5f5"
+TEXT_COLOR = "black"
 COLOR_2025 = "#d9d9d9"
 COLOR_2026 = "#002D72"
 
