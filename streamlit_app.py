@@ -532,9 +532,15 @@ if selected_table == "mart_weather_demand":
         suppresses it** (people stay home, roads become impassable, drivers pull off the road).
 
         The 2025-to-2026 shift seen in Chart 4 is largely driven by snow's growing negative impact.
-        This matters for recommendations: rain is a revenue *opportunity* (more riders available),
-        while snow is a *risk* requiring operational adjustments like pre-positioning or surge
-        management.
+        This is not a behavioral mystery: **2026 had a dramatically worse snow season.** Total snowfall
+        more than doubled (11.6 in vs. 25.2 in), the longest continuous storm grew from 11 to 27 hours,
+        and average snow accumulation tripled (0.14 in vs. 0.41 in on the ground). Meanwhile, rain was
+        actually *lighter* in 2026 (fewer hours, lower intensity), which explains why rain's demand
+        boost weakened but did not flip negative in most boroughs.
+
+        This matters for recommendations: rain remains a revenue *opportunity* (more riders switching
+        to cabs), while snow, especially prolonged heavy snow, is a *risk* that scales with storm
+        severity and requires proactive operational response.
         """)
 
     st.markdown("---")
