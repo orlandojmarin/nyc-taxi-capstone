@@ -86,38 +86,39 @@ def load_table(table_key):
     st.stop()
 
 
-st.sidebar.header("Select Gold Table")
-selected_table = st.sidebar.radio(
-    "Table",
-    list(GOLD_TABLES.keys()),
-    format_func=lambda t: t.replace("_", " ").title(),
-)
+st.sidebar.header("Navigation")
+page = st.sidebar.radio("View", ["Visualizations", "Data Explorer"])
 
-st.header(selected_table.replace("_", " ").title())
-st.caption(GOLD_TABLES[selected_table]["description"])
+if page == "Data Explorer":
+    st.header("Gold Layer Data Explorer")
+    selected_table = st.selectbox(
+        "Select a table",
+        list(GOLD_TABLES.keys()),
+        format_func=lambda t: t.replace("_", " ").title(),
+    )
 
-df = load_table(selected_table)
+    st.caption(GOLD_TABLES[selected_table]["description"])
+    explorer_df = load_table(selected_table)
 
-col1, col2 = st.columns(2)
-with col1:
-    st.metric("Rows", f"{len(df):,}")
-with col2:
-    st.metric("Columns", len(df.columns))
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("Rows", f"{len(explorer_df):,}")
+    with col2:
+        st.metric("Columns", len(explorer_df.columns))
 
-st.dataframe(df, width="stretch", height=600)
+    st.dataframe(explorer_df, width="stretch", height=600)
 
-with st.expander("Column Details"):
-    col_info = pd.DataFrame({
-        "Column": df.columns,
-        "Type": [str(df[c].dtype) for c in df.columns],
-        "Non-Null Count": [df[c].notna().sum() for c in df.columns],
-        "Sample Value": [str(df[c].iloc[0]) if len(df) > 0 else None for c in df.columns],
-    })
-    st.dataframe(col_info, width="stretch")
+    with st.expander("Column Details"):
+        col_info = pd.DataFrame({
+            "Column": explorer_df.columns,
+            "Type": [str(explorer_df[c].dtype) for c in explorer_df.columns],
+            "Non-Null Count": [explorer_df[c].notna().sum() for c in explorer_df.columns],
+            "Sample Value": [str(explorer_df[c].iloc[0]) if len(explorer_df) > 0 else None for c in explorer_df.columns],
+        })
+        st.dataframe(col_info, width="stretch")
 
-if selected_table == "mart_weather_demand":
-    st.markdown("---")
-    st.header("Visualizations")
+else:
+    df = load_table("mart_weather_demand")
 
     MONTH_LABELS = {1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "May",
                     6: "Jun", 7: "Jul", 8: "Aug", 9: "Sep", 10: "Oct",
