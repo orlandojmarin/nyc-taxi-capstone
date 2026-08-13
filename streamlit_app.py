@@ -207,9 +207,8 @@ else:
         """)
 
     weather_dim_for_days = load_table("dim_weather")
-    weather_dim_for_days["_IS_WEEKEND"] = weather_dim_for_days["WEATHER_DATE"].apply(
-        lambda d: d.weekday() >= 5 if hasattr(d, "weekday") else False
-    )
+    weather_dim_for_days["WEATHER_DATE"] = pd.to_datetime(weather_dim_for_days["WEATHER_DATE"])
+    weather_dim_for_days["_IS_WEEKEND"] = weather_dim_for_days["WEATHER_DATE"].dt.weekday >= 5
     weekday_days = weather_dim_for_days[weather_dim_for_days["_IS_WEEKEND"] == False]["WEATHER_DATE"].nunique()
     weekend_days = weather_dim_for_days[weather_dim_for_days["_IS_WEEKEND"] == True]["WEATHER_DATE"].nunique()
 
@@ -388,12 +387,9 @@ else:
         """)
 
     weather_dim = load_table("dim_weather")
-    weather_dim["YEAR"] = weather_dim["WEATHER_DATE"].apply(
-        lambda x: x.year if hasattr(x, "year") else int(str(x)[:4])
-    )
-    weather_dim["IS_NIGHT"] = weather_dim["WEATHER_HOUR"].apply(
-        lambda h: h >= 20 or h < 6
-    )
+    weather_dim["WEATHER_DATE"] = pd.to_datetime(weather_dim["WEATHER_DATE"])
+    weather_dim["YEAR"] = weather_dim["WEATHER_DATE"].dt.year
+    weather_dim["IS_NIGHT"] = (weather_dim["WEATHER_HOUR"] >= 20) | (weather_dim["WEATHER_HOUR"] < 6)
 
     def compute_weather_changes(mart_df, weather_ref, night_filter):
         if night_filter is not None:
