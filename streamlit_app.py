@@ -7,6 +7,7 @@ warnings.filterwarnings("ignore")
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.io as pio
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).parent / "pipeline"))
@@ -20,10 +21,14 @@ st.set_page_config(
 
 st.title("NYC Taxi Capstone: Gold Layer Data Explorer")
 st.markdown(
-    "**Team AMO** | Analytical Question: *How does adverse weather affect taxi "
+    "**Team AMO** (Ariana Lopez, Maryam Choudhury, Orlando Marin) | "
+    "Analytical Question: *How does adverse weather affect taxi "
     "demand across NYC boroughs, and how did those patterns shift between 2025 and 2026?*"
 )
 
+BG_COLOR = "rgba(0,0,0,0)"
+PAPER_COLOR = "rgba(0,0,0,0)"
+TEXT_COLOR = None
 COLOR_2025 = "#d9d9d9"
 COLOR_2026 = "#002D72"
 
@@ -134,11 +139,11 @@ if selected_table == "mart_weather_demand":
             ))
             fig.update_layout(
                 title=dict(text=f"Monthly Trip Volume ({borough})", x=0.5, xanchor="center",
-                           font=dict(size=20, color="black")),
+                           font=dict(size=20, color=TEXT_COLOR)),
                 height=450,
-                plot_bgcolor="white",
-                paper_bgcolor="#f5f5f5",
-                font=dict(color="black", size=14),
+                plot_bgcolor=BG_COLOR,
+                paper_bgcolor=PAPER_COLOR,
+                font=dict(color=TEXT_COLOR, size=14),
                 margin=dict(l=50, r=50, t=70, b=50),
                 xaxis=dict(title="Month", title_font=dict(size=16), tickfont=dict(size=14)),
                 yaxis=dict(title="Total Trips", title_font=dict(size=16), tickfont=dict(size=14)),
@@ -213,11 +218,11 @@ if selected_table == "mart_weather_demand":
             ))
             fig.update_layout(
                 title=dict(text=f"Average Hourly Demand: Weekday vs. Weekend ({borough})",
-                           x=0.5, xanchor="center", font=dict(size=20, color="black")),
+                           x=0.5, xanchor="center", font=dict(size=20, color=TEXT_COLOR)),
                 height=450,
-                plot_bgcolor="white",
-                paper_bgcolor="#f5f5f5",
-                font=dict(color="black", size=14),
+                plot_bgcolor=BG_COLOR,
+                paper_bgcolor=PAPER_COLOR,
+                font=dict(color=TEXT_COLOR, size=14),
                 margin=dict(l=50, r=50, t=70, b=50),
                 xaxis=dict(title="Hour of Day", title_font=dict(size=16), tickfont=dict(size=14),
                            tickmode="linear", dtick=2),
@@ -304,12 +309,12 @@ if selected_table == "mart_weather_demand":
             ))
             fig.update_layout(
                 title=dict(text=f"Average Trip Cost by Borough ({weather_cat})",
-                           x=0.5, xanchor="center", font=dict(size=20, color="black")),
+                           x=0.5, xanchor="center", font=dict(size=20, color=TEXT_COLOR)),
                 barmode="group",
                 height=500,
-                plot_bgcolor="white",
-                paper_bgcolor="#f5f5f5",
-                font=dict(color="black", size=14),
+                plot_bgcolor=BG_COLOR,
+                paper_bgcolor=PAPER_COLOR,
+                font=dict(color=TEXT_COLOR, size=14),
                 margin=dict(l=50, r=50, t=70, b=80),
                 xaxis=dict(title="Borough", title_font=dict(size=16), tickfont=dict(size=14)),
                 yaxis=dict(title="Avg Cost per Trip ($)", title_font=dict(size=16),
@@ -404,12 +409,12 @@ if selected_table == "mart_weather_demand":
         fig.add_hline(y=0, line_dash="dash", line_color="gray")
         fig.update_layout(
             title=dict(text=f"Hourly Demand Change During Adverse Weather ({subtitle})",
-                       x=0.5, xanchor="center", font=dict(size=20, color="black")),
+                       x=0.5, xanchor="center", font=dict(size=20, color=TEXT_COLOR)),
             barmode="group",
             height=500,
-            plot_bgcolor="white",
-            paper_bgcolor="#f5f5f5",
-            font=dict(color="black", size=14),
+            plot_bgcolor=BG_COLOR,
+            paper_bgcolor=PAPER_COLOR,
+            font=dict(color=TEXT_COLOR, size=14),
             margin=dict(l=50, r=50, t=70, b=50),
             xaxis=dict(title="Borough", title_font=dict(size=16), tickfont=dict(size=14)),
             yaxis=dict(title="% Change in Trips/Hour (Adverse vs. Clear)",
@@ -519,10 +524,10 @@ if selected_table == "mart_weather_demand":
             fig.add_hline(y=0, line_dash="dash", line_color="gray")
             fig.update_layout(
                 title=dict(text=f"Demand Change by Weather Type ({borough})",
-                           x=0.5, xanchor="center", font=dict(size=20, color="black")),
+                           x=0.5, xanchor="center", font=dict(size=20, color=TEXT_COLOR)),
                 barmode="group", height=450,
-                plot_bgcolor="white", paper_bgcolor="#f5f5f5",
-                font=dict(color="black", size=14),
+                plot_bgcolor=BG_COLOR, paper_bgcolor=PAPER_COLOR,
+                font=dict(color=TEXT_COLOR, size=14),
                 margin=dict(l=50, r=50, t=70, b=50),
                 xaxis=dict(title="Weather Type", title_font=dict(size=16), tickfont=dict(size=14)),
                 yaxis=dict(title="% Change vs. Clear Weather", title_font=dict(size=16),
@@ -633,10 +638,10 @@ if selected_table == "mart_weather_demand":
             fig.add_hline(y=0, line_dash="dash", line_color="gray")
             fig.update_layout(
                 title=dict(text=f"Revenue Impact per Storm-Hour ({borough})",
-                           x=0.5, xanchor="center", font=dict(size=20, color="black")),
+                           x=0.5, xanchor="center", font=dict(size=20, color=TEXT_COLOR)),
                 barmode="group", height=450,
-                plot_bgcolor="white", paper_bgcolor="#f5f5f5",
-                font=dict(color="black", size=14),
+                plot_bgcolor=BG_COLOR, paper_bgcolor=PAPER_COLOR,
+                font=dict(color=TEXT_COLOR, size=14),
                 margin=dict(l=50, r=50, t=70, b=50),
                 xaxis=dict(title="Time Period", title_font=dict(size=16), tickfont=dict(size=14)),
                 yaxis=dict(title="Revenue Difference per Hour ($)", title_font=dict(size=16),
