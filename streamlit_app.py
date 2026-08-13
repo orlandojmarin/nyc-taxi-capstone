@@ -10,8 +10,30 @@ import plotly.graph_objects as go
 import plotly.io as pio
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, str(Path(__file__).parent / "pipeline"))
-from snowflake_connect import query_to_df
+DATA_DIR = Path(__file__).parent / "data"
+
+CSV_FILES = {
+    "mart_weather_demand": "mart_weather_demand.csv",
+    "fct_trips (sample)": "fct_trips_sample.csv",
+    "dim_zones": "dim_zones.csv",
+    "dim_weather": "dim_weather.csv",
+}
+
+
+def _load_from_csv(table_key):
+    csv_path = DATA_DIR / CSV_FILES[table_key]
+    if csv_path.exists():
+        return pd.read_csv(csv_path)
+    return None
+
+
+def _load_from_snowflake(query):
+    try:
+        sys.path.insert(0, str(Path(__file__).parent / "pipeline"))
+        from snowflake_connect import query_to_df
+        return query_to_df(query)
+    except Exception:
+        return None
 
 st.set_page_config(
     page_title="NYC Taxi Capstone - Gold Layer Explorer",
@@ -53,8 +75,15 @@ GOLD_TABLES = {
 
 
 @st.cache_data(ttl=600)
-def load_table(query):
-    return query_to_df(query)
+def load_table(table_key):
+    df = _load_from_csv(table_key)
+    if df is not None:
+        return df
+    df = _load_from_snowflake(GOLD_TABLES[table_key]["query"])
+    if df is not None:
+        return df
+    st.error(f"Could not load {table_key} from CSV or Snowflake.")
+    st.stop()
 
 
 st.sidebar.header("Select Gold Table")
@@ -67,7 +96,7 @@ selected_table = st.sidebar.radio(
 st.header(selected_table.replace("_", " ").title())
 st.caption(GOLD_TABLES[selected_table]["description"])
 
-df = load_table(GOLD_TABLES[selected_table]["query"])
+df = load_table(selected_table)
 
 col1, col2 = st.columns(2)
 with col1:
@@ -176,7 +205,7 @@ if selected_table == "mart_weather_demand":
         - Hover over points for exact values
         """)
 
-    weather_dim_for_days = load_table("SELECT * FROM TECHCATALYST.AMO_GOLD.DIM_WEATHER")
+    weather_dim_for_days = load_table("dim_weather")
     weather_dim_for_days["_IS_WEEKEND"] = weather_dim_for_days["WEATHER_DATE"].apply(
         lambda d: d.weekday() >= 5 if hasattr(d, "weekday") else False
     )
@@ -357,7 +386,7 @@ if selected_table == "mart_weather_demand":
         - Hover over bars for exact percentages
         """)
 
-    weather_dim = load_table("SELECT * FROM TECHCATALYST.AMO_GOLD.DIM_WEATHER")
+    weather_dim = load_table("dim_weather")
     weather_dim["YEAR"] = weather_dim["WEATHER_DATE"].apply(
         lambda x: x.year if hasattr(x, "year") else int(str(x)[:4])
     )
