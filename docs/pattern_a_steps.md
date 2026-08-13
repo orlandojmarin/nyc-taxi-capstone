@@ -264,11 +264,11 @@ python pipeline/orchestrate.py
 ### Overview
 
 **File:** `streamlit_app.py` (repo root)
-**Data source:** Queries Snowflake directly via `pipeline/snowflake_connect.py` (with 10-minute cache)
+**Data source:** CSV files in `data/` (primary), Snowflake fallback via `pipeline/snowflake_connect.py`
 **Deployment:** Streamlit Community Cloud, pointed at `main` branch
 **Run locally:** `streamlit run streamlit_app.py --server.port 8501 --server.headless true`
 
-The app serves as the bonus deliverable and a narrative companion to the Tableau dashboard. It walks through 6 visualizations that build from general context to specific findings to a business recommendation.
+The app serves as the bonus deliverable and a narrative companion to the Tableau dashboard. It has two pages accessible via the sidebar: **Visualizations** (the 6-chart narrative for presenting) and **Data Explorer** (browse all 4 gold tables for Q&A). The Visualizations page walks from general context to specific findings to a business recommendation.
 
 ### Chart Sequence and Narrative Logic
 
@@ -319,8 +319,11 @@ However, **revenue per trip remains stable** despite shorter distances ($24/trip
 
 ### Design Decisions
 
-- **Color scheme:** Gray (`#d9d9d9`) = 2025, Navy (`#002D72`) = 2026. Consistent across all charts.
+- **Color scheme:** Gray (`#d9d9d9`) = 2025, Navy (`#002D72`) = 2026. Consistent across all YoY charts. Chart 2 (weekday/weekend) uses green (`#2ca02c`) and orange (`#ff7f0e`) to avoid confusion with the year-based color encoding.
+- **Chart backgrounds:** White plot area with `#f5f5f5` gray border (matching MLB reference app). Creates a defined card effect that looks clean in both Streamlit light and dark mode.
 - **Plotly for all charts:** Interactive hover tooltips, consistent styling, responsive layout.
+- **App structure:** Sidebar with two pages: "Visualizations" (default, the 6-chart narrative for presenting) and "Data Explorer" (browse all 4 gold tables for Q&A or reference).
+- **Data loading:** CSV-first with Snowflake fallback. CSVs load instantly with no authentication. Snowflake is only queried if CSVs are missing.
 - **Tabbed by borough:** Each chart uses tabs so the story can be told at the city level (Manhattan tab) then explored by borough.
 - **"How to read" expanders:** Above complex charts, explaining axes, colors, and what positive/negative values mean.
 - **Interpretation expanders:** Below each chart with key takeaways and specific numbers.
