@@ -430,3 +430,218 @@ if selected_table == "mart_weather_demand":
         The **nighttime tab** shows whether this pattern persists when baseline demand is already low,
         helping confirm the finding is not simply a time-of-day artifact.
         """)
+
+    st.markdown("---")
+
+    # --- Chart 5: Weather type breakdown (rain vs snow) ---
+    st.subheader("5. Snow Drives the Demand Drop While Rain Still Boosts Ridership")
+
+    with st.expander("How to read this chart"):
+        st.markdown("""
+        This chart breaks "adverse weather" into its components (Rain vs. Snow) and shows
+        the percentage change in demand compared to clear weather for each type.
+
+        - **Gray bars** = 2025
+        - **Navy bars** = 2026
+        - **Positive values** = more trips per hour than during clear weather
+        - **Negative values** = fewer trips per hour than during clear weather
+        - Each tab shows one borough
+        - This reveals *which type* of bad weather is responsible for the shift seen in Chart 4
+        """)
+
+    def compute_weather_type_changes(mart_df, weather_ref):
+        results = []
+        for borough in boroughs:
+            bdf = mart_df[mart_df["PICKUP_BOROUGH"] == borough]
+            for year in [2025, 2026]:
+                clear_hrs = len(weather_ref[
+                    (weather_ref["YEAR"] == year) & (weather_ref["WEATHER_CATEGORY"] == "Clear")
+                ])
+                clear_trips = bdf[
+                    (bdf["PICKUP_YEAR"] == year) & (bdf["WEATHER_CATEGORY"] == "Clear")
+                ]["TRIP_COUNT"].sum()
+                avg_clear = clear_trips / clear_hrs if clear_hrs > 0 else 0
+
+                for wtype in ["Rain", "Snow"]:
+                    type_hrs = len(weather_ref[
+                        (weather_ref["YEAR"] == year) & (weather_ref["WEATHER_CATEGORY"] == wtype)
+                    ])
+                    type_trips = bdf[
+                        (bdf["PICKUP_YEAR"] == year) & (bdf["WEATHER_CATEGORY"] == wtype)
+                    ]["TRIP_COUNT"].sum()
+                    avg_type = type_trips / type_hrs if type_hrs > 0 else 0
+                    pct_change = ((avg_type - avg_clear) / avg_clear * 100) if avg_clear > 0 else 0
+                    results.append({
+                        "borough": borough, "year": year,
+                        "weather_type": wtype, "pct_change": round(pct_change, 2)
+                    })
+        return results
+
+    weather_type_changes = compute_weather_type_changes(df, weather_dim)
+
+    tabs5 = st.tabs(boroughs)
+    for tab, borough in zip(tabs5, boroughs):
+        with tab:
+            borough_data = [d for d in weather_type_changes if d["borough"] == borough]
+
+            rain_2025 = next((d["pct_change"] for d in borough_data
+                              if d["weather_type"] == "Rain" and d["year"] == 2025), 0)
+            rain_2026 = next((d["pct_change"] for d in borough_data
+                              if d["weather_type"] == "Rain" and d["year"] == 2026), 0)
+            snow_2025 = next((d["pct_change"] for d in borough_data
+                              if d["weather_type"] == "Snow" and d["year"] == 2025), 0)
+            snow_2026 = next((d["pct_change"] for d in borough_data
+                              if d["weather_type"] == "Snow" and d["year"] == 2026), 0)
+
+            fig = go.Figure()
+            fig.add_trace(go.Bar(
+                x=["Rain", "Snow"], y=[rain_2025, snow_2025],
+                name="2025", marker_color=COLOR_2025,
+                marker_line=dict(width=1, color="black"),
+                text=[f"{rain_2025:+.1f}%", f"{snow_2025:+.1f}%"],
+                textposition="outside", textfont=dict(size=12),
+                hovertemplate="<b>%{x}</b><br>2025: %{y:+.2f}%<extra></extra>"
+            ))
+            fig.add_trace(go.Bar(
+                x=["Rain", "Snow"], y=[rain_2026, snow_2026],
+                name="2026", marker_color=COLOR_2026,
+                marker_line=dict(width=1, color="black"),
+                text=[f"{rain_2026:+.1f}%", f"{snow_2026:+.1f}%"],
+                textposition="outside", textfont=dict(size=12),
+                hovertemplate="<b>%{x}</b><br>2026: %{y:+.2f}%<extra></extra>"
+            ))
+            fig.add_hline(y=0, line_dash="dash", line_color="gray")
+            fig.update_layout(
+                title=dict(text=f"Demand Change by Weather Type ({borough})",
+                           x=0.5, xanchor="center", font=dict(size=20, color="black")),
+                barmode="group", height=450,
+                plot_bgcolor="white", paper_bgcolor="#f5f5f5",
+                font=dict(color="black", size=14),
+                margin=dict(l=50, r=50, t=70, b=50),
+                xaxis=dict(title="Weather Type", title_font=dict(size=16), tickfont=dict(size=14)),
+                yaxis=dict(title="% Change vs. Clear Weather", title_font=dict(size=16),
+                           tickfont=dict(size=14), ticksuffix="%", zeroline=True),
+                legend=dict(font=dict(size=14))
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+    with st.expander("Show interpretation"):
+        st.markdown("""
+        Breaking adverse weather into Rain and Snow reveals a critical distinction: **rain consistently
+        boosts taxi demand** (people avoid walking in the rain and switch to cabs), while **snow
+        suppresses it** (people stay home, roads become impassable, drivers pull off the road).
+
+        The 2025-to-2026 shift seen in Chart 4 is largely driven by snow's growing negative impact.
+        This matters for recommendations: rain is a revenue *opportunity* (more riders available),
+        while snow is a *risk* requiring operational adjustments like pre-positioning or surge
+        management.
+        """)
+
+    st.markdown("---")
+
+    # --- Chart 6: Revenue per adverse-weather hour, rush vs off-peak ---
+    st.subheader("6. Storm-Hour Revenue Losses Concentrate During Rush Hour")
+
+    with st.expander("How to read this chart"):
+        st.markdown("""
+        This chart shows the **dollar difference in revenue per hour** during adverse weather
+        compared to clear weather, split by rush hour vs. off-peak.
+
+        - **Gray bars** = 2025
+        - **Navy bars** = 2026
+        - **Negative values** = revenue lost per storm-hour compared to a clear-weather hour
+        - **Positive values** = revenue gained per storm-hour (riders switching to taxis)
+        - **Rush Hour** = 7-10 AM and 4-7 PM weekdays
+        - **Off-Peak** = all other hours
+        - Each tab shows one borough
+        - This quantifies the finding from Charts 4 and 5 in dollars, and shows when the
+          impact is most severe
+        """)
+
+    def compute_revenue_per_hour(mart_df, weather_ref, rush_filter):
+        results = []
+        for borough in boroughs:
+            bdf = mart_df[(mart_df["PICKUP_BOROUGH"] == borough) &
+                          (mart_df["IS_RUSH_HOUR"] == rush_filter)]
+            wf = weather_ref.copy()
+            if rush_filter:
+                wf = wf[wf["WEATHER_HOUR"].isin([7, 8, 9, 16, 17, 18])]
+            else:
+                wf = wf[~wf["WEATHER_HOUR"].isin([7, 8, 9, 16, 17, 18])]
+
+            for year in [2025, 2026]:
+                clear_hrs = len(wf[(wf["YEAR"] == year) & (wf["IS_ADVERSE_WEATHER"] == False)])
+                adverse_hrs = len(wf[(wf["YEAR"] == year) & (wf["IS_ADVERSE_WEATHER"] == True)])
+                clear_rev = bdf[(bdf["PICKUP_YEAR"] == year) &
+                                (bdf["IS_ADVERSE_WEATHER"] == False)]["TOTAL_REVENUE"].sum()
+                adverse_rev = bdf[(bdf["PICKUP_YEAR"] == year) &
+                                  (bdf["IS_ADVERSE_WEATHER"] == True)]["TOTAL_REVENUE"].sum()
+                rev_per_clear_hr = clear_rev / clear_hrs if clear_hrs > 0 else 0
+                rev_per_adverse_hr = adverse_rev / adverse_hrs if adverse_hrs > 0 else 0
+                delta = rev_per_adverse_hr - rev_per_clear_hr
+                results.append({"borough": borough, "year": year, "delta": round(delta, 2)})
+        return results
+
+    tabs6 = st.tabs(boroughs)
+    for tab, borough in zip(tabs6, boroughs):
+        with tab:
+            rush_data = compute_revenue_per_hour(df, weather_dim, rush_filter=True)
+            offpeak_data = compute_revenue_per_hour(df, weather_dim, rush_filter=False)
+
+            rush_borough = [d for d in rush_data if d["borough"] == borough]
+            offpeak_borough = [d for d in offpeak_data if d["borough"] == borough]
+
+            categories = ["Rush Hour", "Off-Peak"]
+            vals_2025 = [
+                next((d["delta"] for d in rush_borough if d["year"] == 2025), 0),
+                next((d["delta"] for d in offpeak_borough if d["year"] == 2025), 0)
+            ]
+            vals_2026 = [
+                next((d["delta"] for d in rush_borough if d["year"] == 2026), 0),
+                next((d["delta"] for d in offpeak_borough if d["year"] == 2026), 0)
+            ]
+
+            fig = go.Figure()
+            fig.add_trace(go.Bar(
+                x=categories, y=vals_2025, name="2025",
+                marker_color=COLOR_2025,
+                marker_line=dict(width=1, color="black"),
+                text=[f"${v:+,.0f}" for v in vals_2025],
+                textposition="outside", textfont=dict(size=12),
+                hovertemplate="<b>%{x}</b><br>2025: $%{y:+,.0f}/hr<extra></extra>"
+            ))
+            fig.add_trace(go.Bar(
+                x=categories, y=vals_2026, name="2026",
+                marker_color=COLOR_2026,
+                marker_line=dict(width=1, color="black"),
+                text=[f"${v:+,.0f}" for v in vals_2026],
+                textposition="outside", textfont=dict(size=12),
+                hovertemplate="<b>%{x}</b><br>2026: $%{y:+,.0f}/hr<extra></extra>"
+            ))
+            fig.add_hline(y=0, line_dash="dash", line_color="gray")
+            fig.update_layout(
+                title=dict(text=f"Revenue Impact per Storm-Hour ({borough})",
+                           x=0.5, xanchor="center", font=dict(size=20, color="black")),
+                barmode="group", height=450,
+                plot_bgcolor="white", paper_bgcolor="#f5f5f5",
+                font=dict(color="black", size=14),
+                margin=dict(l=50, r=50, t=70, b=50),
+                xaxis=dict(title="Time Period", title_font=dict(size=16), tickfont=dict(size=14)),
+                yaxis=dict(title="Revenue Difference per Hour ($)", title_font=dict(size=16),
+                           tickfont=dict(size=14), tickprefix="$", zeroline=True),
+                legend=dict(font=dict(size=14))
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+    with st.expander("Show interpretation"):
+        st.markdown("""
+        This chart translates the demand shift into dollars and reveals **when** the loss is most
+        acute. In 2025, adverse weather during rush hour often *increased* revenue (more riders
+        hailing cabs). In 2026, that pattern reversed, and the losses concentrate heavily during
+        rush hour, where per-hour revenue is highest.
+
+        **Business implication:** A single storm-hour during rush hour now costs more in lost revenue
+        than several off-peak storm-hours combined. This supports a targeted response: pre-position
+        vehicles before forecasted storms, prioritize rush-hour coverage, and consider dynamic
+        incentives for drivers to stay on the road during adverse conditions.
+        """)
