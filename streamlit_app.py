@@ -288,7 +288,7 @@ else:
         - Tips are excluded for consistency (cash tips are not recorded in TLC data)
         """)
 
-    weather_cat_emojis = {"Clear": "☀️ Clear", "Cloudy": "☁️ Cloudy", "Drizzle": "\U0001f4a7 Drizzle", "Rain": "\U0001f327️ Rain", "Snow": "❄️ Snow"}
+    weather_cat_emojis = {"Clear": "☀️ Clear", "Cloudy": "☁️ Cloudy", "Drizzle": "\U0001f4a7 Drizzle", "Rain": "☂️ Rain", "Snow": "❄️ Snow"}
     weather_cats = sorted(df["WEATHER_CATEGORY"].unique())
     tabs3 = st.tabs([weather_cat_emojis.get(c, c) for c in weather_cats])
     for tab, weather_cat in zip(tabs3, weather_cats):
