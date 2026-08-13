@@ -259,11 +259,75 @@ python pipeline/orchestrate.py
 
 ---
 
+## Visualization: Streamlit App
+
+### Overview
+
+**File:** `streamlit_app.py` (repo root)
+**Data source:** Queries Snowflake directly via `pipeline/snowflake_connect.py` (with 10-minute cache)
+**Deployment:** Streamlit Community Cloud, pointed at `main` branch
+**Run locally:** `streamlit run streamlit_app.py --server.port 8501 --server.headless true`
+
+The app serves as the bonus deliverable and a narrative companion to the Tableau dashboard. It walks through 6 visualizations that build from general context to specific findings to a business recommendation.
+
+### Chart Sequence and Narrative Logic
+
+| # | Chart | Role in Story |
+| :--- | :--- | :--- |
+| 1 | Monthly Trip Volume (YoY line, tabbed by borough) | Context: demand is growing year-over-year |
+| 2 | Average Trip Cost by Weather Category (grouped bar, tabbed by weather) | Context: pricing is stable regardless of weather |
+| 3 | Weekday vs. Weekend Hourly Demand (line, tabbed by borough) | Context: rush hours are the highest-demand periods |
+| 4 | % Demand Change During Adverse Weather (grouped bar, day/night tabs) | Core finding: weather impact flipped from positive to negative in 2026 |
+| 5 | Demand Change by Weather Type: Rain vs. Snow (grouped bar, tabbed by borough) | Drill-down: snow drives the shift, rain still helps |
+| 6 | Revenue Impact per Storm-Hour: Rush vs. Off-Peak (grouped bar, tabbed by borough) | So-what: dollar cost of the shift, concentrated at rush hour |
+
+### Key Analytical Finding: Weather Severity Explains the 2025-to-2026 Shift
+
+The demand reversal in Chart 4 is not a behavioral mystery. Comparing the actual weather data between years:
+
+| Metric | 2025 (Jan-May) | 2026 (Jan-May) | Change |
+| :--- | :--- | :--- | :--- |
+| Snow hours | 84 | 133 | +58% |
+| Total snowfall | 11.6 in | 25.2 in | +117% |
+| Avg snow depth (during snow) | 0.14 in | 0.41 in | 3x deeper |
+| Max snow depth | 0.39 in | 1.54 in | 4x worse peak |
+| Longest continuous snow event | 11 hrs | 27 hrs | 2.5x longer |
+| January snow hours | 31 | 63 | Double |
+| Snow in March | 0 hrs | 15 hrs | Late-season storms |
+| Rain hours | 97 | 88 | -9% (fewer) |
+| Avg rain intensity | 0.12 in/hr | 0.09 in/hr | Lighter |
+| Total rainfall | 17.9 in | 12.3 in | -31% (less rain) |
+
+**Interpretation:** 2026 had a dramatically harsher snow season: more than double the total snowfall, storms lasting over a full day (27 consecutive hours vs. 11), and 3x more accumulation on the ground. Light snow (2025-style) may not deter riders, but prolonged heavy snow shuts down roads, keeps people home, and pulls drivers offline. Meanwhile, rain was actually milder in 2026, which is why rain's demand boost weakened slightly but did not reverse in most boroughs.
+
+This is a stronger, more defensible finding than "rider behavior changed." The data supports: **taxi demand's sensitivity to snow scales with storm intensity,** and 2026's storms crossed a severity threshold that light 2025 snow did not.
+
+### Design Decisions
+
+- **Color scheme:** Gray (`#d9d9d9`) = 2025, Navy (`#002D72`) = 2026. Consistent across all charts.
+- **Plotly for all charts:** Interactive hover tooltips, consistent styling, responsive layout.
+- **Tabbed by borough:** Each chart uses tabs so the story can be told at the city level (Manhattan tab) then explored by borough.
+- **"How to read" expanders:** Above complex charts, explaining axes, colors, and what positive/negative values mean.
+- **Interpretation expanders:** Below each chart with key takeaways and specific numbers.
+- **Normalization:** Charts 4-6 use per-hour averages (dividing by the number of hours in each condition) so comparisons are fair despite unequal sample sizes.
+- **Tips excluded from cost charts:** Cash tips are not recorded in TLC data, which would skew any comparison involving tip amounts.
+
+### Visualization: Tableau Dashboard
+
+**Owner:** Maryam Choudhury
+**Data source:** Connected to `TECHCATALYST.AMO_GOLD.MART_WEATHER_DEMAND` in Snowflake
+**Connection guide:** See [Tableau Connection Guide](tableau_connection_guide.md)
+
+---
+
 ## What's Next
 
-- Connect Tableau to AMO_GOLD.MART_WEATHER_DEMAND (34K rows, instant queries). See [Tableau Connection Guide](tableau_connection_guide.md)
-- Build Streamlit app with interactive borough/weather/year filters
-- Presentation preparation
+- [ ] Finalize presentation slides with findings from Charts 4-6
+- [ ] Cost and performance rationale document
+- [ ] Future state proposal with effort estimate
+- [ ] README update with reproduction instructions
+- [ ] AI use disclosure
+- [ ] First rehearsal (Friday Aug 14)
 
 ---
 
