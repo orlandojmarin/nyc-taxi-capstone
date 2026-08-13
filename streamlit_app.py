@@ -41,7 +41,7 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("NYC Taxi Capstone: Data Explorer")
+st.title("\U0001f695 NYC Taxi Capstone: Data Explorer")
 st.markdown(
     "**Team AMO** (Ariana Lopez, Maryam Choudhury, Orlando Marin) | "
     "Analytical Question: *How does adverse weather affect taxi "
@@ -126,7 +126,7 @@ else:
     boroughs = sorted(df["PICKUP_BOROUGH"].unique())
 
     # --- Chart 1: Year-over-year monthly trip volume by borough ---
-    st.subheader("1. Monthly Trip Volume Shows Consistent Year-over-Year Growth")
+    st.subheader("\U0001f695 Monthly Trip Volume Shows Consistent Year-over-Year Growth")
 
     with st.expander("How to read this chart"):
         st.markdown("""
@@ -191,7 +191,7 @@ else:
     st.markdown("---")
 
     # --- Chart 2: Weekday vs weekend demand by hour ---
-    st.subheader("2. Weekday Demand Spikes at Rush Hour While Weekends Stay Flat")
+    st.subheader("\U0001f552 Weekday Demand Spikes at Rush Hour While Weekends Stay Flat")
 
     with st.expander("How to read this chart"):
         st.markdown("""
@@ -274,7 +274,7 @@ else:
     st.markdown("---")
 
     # --- Chart 3: Average trip cost by borough, tabbed by weather category ---
-    st.subheader("3. Average Trip Cost Remains Stable Across Weather Conditions")
+    st.subheader("\U0001f4b0 Average Trip Cost Remains Stable Across Weather Conditions")
 
     with st.expander("How to read this chart"):
         st.markdown("""
@@ -288,8 +288,9 @@ else:
         - Tips are excluded for consistency (cash tips are not recorded in TLC data)
         """)
 
+    weather_cat_emojis = {"Clear": "☀️ Clear", "Rain": "\U0001f327️ Rain", "Snow": "❄️ Snow"}
     weather_cats = sorted(df["WEATHER_CATEGORY"].unique())
-    tabs3 = st.tabs(weather_cats)
+    tabs3 = st.tabs([weather_cat_emojis.get(c, c) for c in weather_cats])
     for tab, weather_cat in zip(tabs3, weather_cats):
         with tab:
             wcat_df = df[df["WEATHER_CATEGORY"] == weather_cat].copy()
@@ -370,7 +371,7 @@ else:
     st.markdown("---")
 
     # --- Chart 4: Per-hour demand change during adverse weather ---
-    st.subheader("4. Weather's Effect on Taxi Demand Shifted Between 2025 and 2026")
+    st.subheader("\U0001f327️❄️ Weather's Effect on Taxi Demand Shifted Between 2025 and 2026")
 
     with st.expander("How to read this chart"):
         st.markdown("""
@@ -450,7 +451,7 @@ else:
         )
         st.plotly_chart(fig, use_container_width=True)
 
-    tab_day, tab_night = st.tabs(["Day (6 AM - 8 PM)", "Night (8 PM - 6 AM)"])
+    tab_day, tab_night = st.tabs(["☀️ Day (6 AM - 8 PM)", "\U0001f319 Night (8 PM - 6 AM)"])
     with tab_day:
         day_changes = compute_weather_changes(df, weather_dim, night_filter=False)
         render_weather_chart(day_changes, "Daytime Hours")
@@ -471,7 +472,7 @@ else:
     st.markdown("---")
 
     # --- Chart 5: Weather type breakdown (rain vs snow) ---
-    st.subheader("5. Snow Drives the Demand Drop While Rain Still Boosts Ridership")
+    st.subheader("❄️ Snow Drives the Demand Drop While Rain Still Boosts Ridership")
 
     with st.expander("How to read this chart"):
         st.markdown("""
@@ -583,7 +584,7 @@ else:
     st.markdown("---")
 
     # --- Chart 6: Revenue per adverse-weather hour, rush vs off-peak ---
-    st.subheader("6. Storm-Hour Revenue Losses Concentrate During Rush Hour")
+    st.subheader("\U0001f4b8 Storm-Hour Revenue Losses Concentrate During Rush Hour")
 
     with st.expander("How to read this chart"):
         st.markdown("""
