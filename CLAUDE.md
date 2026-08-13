@@ -283,6 +283,22 @@ This is a prior Streamlit project by Orlando that sets the visual standard for t
 
 **For the capstone app:** Aim for this same level of polish. Each visualization should state a finding in the subheader, include interpretation in an expander, use the consistent navy/gray color scheme (2025 = `#1a2456`, 2026 = `#a0a0a0`), and include interactivity where useful.
 
+## Weather Data Limitations (Be Ready to Defend)
+
+The weather categorization is based on **hourly observations** from the Open-Meteo API. When the data says "Snow" or "Rain," it means precipitation was actively occurring during that specific hour (based on WMO weather codes 61-67 for rain, 71-77 for snow).
+
+Key nuance: the **impact of snow persists well beyond the snowfall itself** (accumulation, icy roads, slush, transit delays). The current `IS_ADVERSE_WEATHER` flag triggers on:
+- `WEATHER_CODE >= 61` (active precipitation)
+- `SNOWFALL_INCH > 0` (measurable snowfall)
+- `WIND_SPEED_MPH > 25` (high winds)
+
+It does **not** capture:
+- Lag effects (e.g., the 6+ hours after a snowstorm when roads are still bad and accumulation remains)
+- Pre-storm behavior (people may avoid taxis in anticipation of a storm)
+- `SNOW_DEPTH_INCH > 0` as a condition (snow on the ground without active snowfall)
+
+If asked during the demo: acknowledge this as a known limitation. A more sophisticated model could apply a time-lag window after snow events or use `SNOW_DEPTH_INCH` as an additional adverse condition. This would be a future enhancement.
+
 ## Process Reference
 
 See `docs/pattern_a_steps.md` for a detailed step-by-step log of what was done at each layer, why, and how to reproduce it.
