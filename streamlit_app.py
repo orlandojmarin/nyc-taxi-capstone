@@ -198,8 +198,8 @@ else:
         This line chart shows average trips per hour across the 24-hour day, comparing weekdays
         to weekends.
 
-        - **Gray line** = Weekdays (Mon-Fri)
-        - **Navy line** = Weekends (Sat-Sun)
+        - **Green line** = Weekdays (Mon-Fri)
+        - **Orange line** = Weekends (Sat-Sun)
         - Values are normalized: total trips at each hour divided by the number of weekday or
           weekend days, so the lines are directly comparable despite more weekdays existing
         - Each tab shows one borough
@@ -233,16 +233,16 @@ else:
                 x=weekday_hourly["PICKUP_HOUR"].values,
                 y=weekday_hourly["AVG_TRIPS"].values,
                 mode="lines+markers", name="Weekday",
-                line=dict(color=COLOR_2025, width=3),
-                marker=dict(size=6),
+                line=dict(color="#2ca02c", width=3),
+                marker=dict(size=6, color="#2ca02c"),
                 hovertemplate="<b>Weekday</b><br>Hour: %{x}:00<br>Avg Trips: %{y:,.0f}<extra></extra>"
             ))
             fig.add_trace(go.Scatter(
                 x=weekend_hourly["PICKUP_HOUR"].values,
                 y=weekend_hourly["AVG_TRIPS"].values,
                 mode="lines+markers", name="Weekend",
-                line=dict(color=COLOR_2026, width=3),
-                marker=dict(size=6, color=COLOR_2026),
+                line=dict(color="#ff7f0e", width=3),
+                marker=dict(size=6, color="#ff7f0e"),
                 hovertemplate="<b>Weekend</b><br>Hour: %{x}:00<br>Avg Trips: %{y:,.0f}<extra></extra>"
             ))
             fig.update_layout(
