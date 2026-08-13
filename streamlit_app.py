@@ -155,8 +155,92 @@ if selected_table == "mart_weather_demand":
 
     st.markdown("---")
 
-    # --- Chart 2: Average trip cost by borough, tabbed by weather category ---
-    st.subheader("2. Average Trip Cost Remains Stable Across Weather Conditions")
+    # --- Chart 2: Weekday vs weekend demand by hour ---
+    st.subheader("2. Weekday Demand Spikes at Rush Hour While Weekends Stay Flat")
+
+    with st.expander("How to read this chart"):
+        st.markdown("""
+        This line chart shows average trips per hour across the 24-hour day, comparing weekdays
+        to weekends.
+
+        - **Gray line** = Weekdays (Mon-Fri)
+        - **Navy line** = Weekends (Sat-Sun)
+        - Values are normalized: total trips at each hour divided by the number of weekday or
+          weekend days, so the lines are directly comparable despite more weekdays existing
+        - Each tab shows one borough
+        - Hover over points for exact values
+        """)
+
+    weather_dim_for_days = load_table("SELECT * FROM TECHCATALYST.AMO_GOLD.DIM_WEATHER")
+    weather_dim_for_days["_IS_WEEKEND"] = weather_dim_for_days["WEATHER_DATE"].apply(
+        lambda d: d.weekday() >= 5 if hasattr(d, "weekday") else False
+    )
+    weekday_days = weather_dim_for_days[weather_dim_for_days["_IS_WEEKEND"] == False]["WEATHER_DATE"].nunique()
+    weekend_days = weather_dim_for_days[weather_dim_for_days["_IS_WEEKEND"] == True]["WEATHER_DATE"].nunique()
+
+    tabs_wd = st.tabs(boroughs)
+    for tab, borough in zip(tabs_wd, boroughs):
+        with tab:
+            bdf = df[df["PICKUP_BOROUGH"] == borough]
+            weekday_hourly = bdf[bdf["IS_WEEKEND"] == False].groupby(
+                "PICKUP_HOUR", as_index=False
+            )["TRIP_COUNT"].sum()
+            weekend_hourly = bdf[bdf["IS_WEEKEND"] == True].groupby(
+                "PICKUP_HOUR", as_index=False
+            )["TRIP_COUNT"].sum()
+
+            weekday_hourly = weekday_hourly.sort_values("PICKUP_HOUR")
+            weekend_hourly = weekend_hourly.sort_values("PICKUP_HOUR")
+            weekday_hourly["AVG_TRIPS"] = weekday_hourly["TRIP_COUNT"] / weekday_days
+            weekend_hourly["AVG_TRIPS"] = weekend_hourly["TRIP_COUNT"] / weekend_days
+
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(
+                x=weekday_hourly["PICKUP_HOUR"].values,
+                y=weekday_hourly["AVG_TRIPS"].values,
+                mode="lines+markers", name="Weekday",
+                line=dict(color=COLOR_2025, width=3),
+                marker=dict(size=6),
+                hovertemplate="<b>Weekday</b><br>Hour: %{x}:00<br>Avg Trips: %{y:,.0f}<extra></extra>"
+            ))
+            fig.add_trace(go.Scatter(
+                x=weekend_hourly["PICKUP_HOUR"].values,
+                y=weekend_hourly["AVG_TRIPS"].values,
+                mode="lines+markers", name="Weekend",
+                line=dict(color=COLOR_2026, width=3),
+                marker=dict(size=6, color=COLOR_2026),
+                hovertemplate="<b>Weekend</b><br>Hour: %{x}:00<br>Avg Trips: %{y:,.0f}<extra></extra>"
+            ))
+            fig.update_layout(
+                title=dict(text=f"Average Hourly Demand: Weekday vs. Weekend ({borough})",
+                           x=0.5, xanchor="center", font=dict(size=20, color="black")),
+                height=450,
+                plot_bgcolor="white",
+                paper_bgcolor="#f5f5f5",
+                font=dict(color="black", size=14),
+                margin=dict(l=50, r=50, t=70, b=50),
+                xaxis=dict(title="Hour of Day", title_font=dict(size=16), tickfont=dict(size=14),
+                           tickmode="linear", dtick=2),
+                yaxis=dict(title="Avg Trips per Hour", title_font=dict(size=16),
+                           tickfont=dict(size=14)),
+                legend=dict(font=dict(size=14))
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+    with st.expander("Show interpretation"):
+        st.markdown("""
+        Weekday demand shows sharp peaks during morning and evening rush hours (8 AM and 5-7 PM),
+        while weekend demand is more evenly distributed throughout the day, rising gradually from
+        late morning through the evening. This pattern matters for the weather analysis: if adverse
+        weather hits during rush hour on a weekday, it disrupts a high-demand period. The same
+        weather on a weekend would affect a flatter demand curve, potentially showing a smaller
+        absolute impact.
+        """)
+
+    st.markdown("---")
+
+    # --- Chart 3: Average trip cost by borough, tabbed by weather category ---
+    st.subheader("3. Average Trip Cost Remains Stable Across Weather Conditions")
 
     with st.expander("How to read this chart"):
         st.markdown("""
@@ -241,90 +325,6 @@ if selected_table == "mart_weather_demand":
         Year-over-year changes are modest, with slight increases in 2026 likely reflecting inflation
         or fare adjustments rather than weather-driven surge pricing. Tips are excluded because cash
         tips are not recorded in TLC data, which would skew comparisons across payment types.
-        """)
-
-    st.markdown("---")
-
-    # --- Chart 3: Weekday vs weekend demand by hour ---
-    st.subheader("3. Weekday Demand Spikes at Rush Hour While Weekends Stay Flat")
-
-    with st.expander("How to read this chart"):
-        st.markdown("""
-        This line chart shows average trips per hour across the 24-hour day, comparing weekdays
-        to weekends.
-
-        - **Gray line** = Weekdays (Mon-Fri)
-        - **Navy line** = Weekends (Sat-Sun)
-        - Values are normalized: total trips at each hour divided by the number of weekday or
-          weekend days, so the lines are directly comparable despite more weekdays existing
-        - Each tab shows one borough
-        - Hover over points for exact values
-        """)
-
-    weather_dim_for_days = load_table("SELECT * FROM TECHCATALYST.AMO_GOLD.DIM_WEATHER")
-    weather_dim_for_days["_IS_WEEKEND"] = weather_dim_for_days["WEATHER_DATE"].apply(
-        lambda d: d.weekday() >= 5 if hasattr(d, "weekday") else False
-    )
-    weekday_days = weather_dim_for_days[weather_dim_for_days["_IS_WEEKEND"] == False]["WEATHER_DATE"].nunique()
-    weekend_days = weather_dim_for_days[weather_dim_for_days["_IS_WEEKEND"] == True]["WEATHER_DATE"].nunique()
-
-    tabs_wd = st.tabs(boroughs)
-    for tab, borough in zip(tabs_wd, boroughs):
-        with tab:
-            bdf = df[df["PICKUP_BOROUGH"] == borough]
-            weekday_hourly = bdf[bdf["IS_WEEKEND"] == False].groupby(
-                "PICKUP_HOUR", as_index=False
-            )["TRIP_COUNT"].sum()
-            weekend_hourly = bdf[bdf["IS_WEEKEND"] == True].groupby(
-                "PICKUP_HOUR", as_index=False
-            )["TRIP_COUNT"].sum()
-
-            weekday_hourly = weekday_hourly.sort_values("PICKUP_HOUR")
-            weekend_hourly = weekend_hourly.sort_values("PICKUP_HOUR")
-            weekday_hourly["AVG_TRIPS"] = weekday_hourly["TRIP_COUNT"] / weekday_days
-            weekend_hourly["AVG_TRIPS"] = weekend_hourly["TRIP_COUNT"] / weekend_days
-
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(
-                x=weekday_hourly["PICKUP_HOUR"].values,
-                y=weekday_hourly["AVG_TRIPS"].values,
-                mode="lines+markers", name="Weekday",
-                line=dict(color=COLOR_2025, width=3),
-                marker=dict(size=6),
-                hovertemplate="<b>Weekday</b><br>Hour: %{x}:00<br>Avg Trips: %{y:,.0f}<extra></extra>"
-            ))
-            fig.add_trace(go.Scatter(
-                x=weekend_hourly["PICKUP_HOUR"].values,
-                y=weekend_hourly["AVG_TRIPS"].values,
-                mode="lines+markers", name="Weekend",
-                line=dict(color=COLOR_2026, width=3),
-                marker=dict(size=6, color=COLOR_2026),
-                hovertemplate="<b>Weekend</b><br>Hour: %{x}:00<br>Avg Trips: %{y:,.0f}<extra></extra>"
-            ))
-            fig.update_layout(
-                title=dict(text=f"Average Hourly Demand: Weekday vs. Weekend ({borough})",
-                           x=0.5, xanchor="center", font=dict(size=20, color="black")),
-                height=450,
-                plot_bgcolor="white",
-                paper_bgcolor="#f5f5f5",
-                font=dict(color="black", size=14),
-                margin=dict(l=50, r=50, t=70, b=50),
-                xaxis=dict(title="Hour of Day", title_font=dict(size=16), tickfont=dict(size=14),
-                           tickmode="linear", dtick=2),
-                yaxis=dict(title="Avg Trips per Hour", title_font=dict(size=16),
-                           tickfont=dict(size=14)),
-                legend=dict(font=dict(size=14))
-            )
-            st.plotly_chart(fig, use_container_width=True)
-
-    with st.expander("Show interpretation"):
-        st.markdown("""
-        Weekday demand shows sharp peaks during morning and evening rush hours (8 AM and 5-7 PM),
-        while weekend demand is more evenly distributed throughout the day, rising gradually from
-        late morning through the evening. This pattern matters for the weather analysis: if adverse
-        weather hits during rush hour on a weekday, it disrupts a high-demand period. The same
-        weather on a weekend would affect a flatter demand curve, potentially showing a smaller
-        absolute impact.
         """)
 
     st.markdown("---")

@@ -275,8 +275,8 @@ The app serves as the bonus deliverable and a narrative companion to the Tableau
 | # | Chart | Role in Story |
 | :--- | :--- | :--- |
 | 1 | Monthly Trip Volume (YoY line, tabbed by borough) | Context: demand is growing year-over-year |
-| 2 | Average Trip Cost by Weather Category (grouped bar, tabbed by weather) | Context: pricing is stable regardless of weather |
-| 3 | Weekday vs. Weekend Hourly Demand (line, tabbed by borough) | Context: rush hours are the highest-demand periods |
+| 2 | Weekday vs. Weekend Hourly Demand (line, tabbed by borough) | Context: rush hours are the highest-demand periods |
+| 3 | Average Trip Cost by Weather Category (grouped bar, tabbed by weather) | Introduces weather: pricing is stable regardless of conditions |
 | 4 | % Demand Change During Adverse Weather (grouped bar, day/night tabs) | Core finding: weather impact flipped from positive to negative in 2026 |
 | 5 | Demand Change by Weather Type: Rain vs. Snow (grouped bar, tabbed by borough) | Drill-down: snow drives the shift, rain still helps |
 | 6 | Revenue Impact per Storm-Hour: Rush vs. Off-Peak (grouped bar, tabbed by borough) | So-what: dollar cost of the shift, concentrated at rush hour |
