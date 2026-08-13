@@ -30,7 +30,6 @@ jobs:
             "data/dim_zones.csv"
             "data/fct_trips_sample.csv"
             "docs/Capstone_Architecture_PatternA.drawio"
-            "docs/Capstone_Presentation.pptx"
             "docs/data_quality_report.md"
             "docs/pattern_a_steps.md"
           )
