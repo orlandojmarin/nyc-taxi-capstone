@@ -36,12 +36,12 @@ def _load_from_snowflake(query):
         return None
 
 st.set_page_config(
-    page_title="NYC Taxi Capstone - Gold Layer Explorer",
+    page_title="NYC Taxi Capstone - Team AMO",
     page_icon="🚕",
     layout="wide",
 )
 
-st.title("NYC Taxi Capstone: Gold Layer Data Explorer")
+st.title("NYC Taxi Capstone: Data Explorer")
 st.markdown(
     "**Team AMO** (Ariana Lopez, Maryam Choudhury, Orlando Marin) | "
     "Analytical Question: *How does adverse weather affect taxi "
