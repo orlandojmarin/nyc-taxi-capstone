@@ -71,7 +71,7 @@ This is the main table to use. It has 30,251 rows (pre-aggregated from 38M trips
 
 | Column | Type | Description |
 | :--- | :--- | :--- |
-| `PICKUP_BOROUGH` | VARCHAR | NYC borough where the trip started (Manhattan, Brooklyn, Queens, Bronx, Staten Island, EWR). Only real boroughs are included. |
+| `PICKUP_BOROUGH` | VARCHAR | NYC borough where the trip started (Manhattan, Brooklyn, Queens, Bronx, Staten Island). EWR excluded as it is not an NYC borough. |
 | `WEATHER_CATEGORY` | VARCHAR | Weather condition at time of pickup (Clear, Cloudy, Fog, Drizzle, Rain, Snow, Rain Showers, Snow Showers, Thunderstorm) |
 | `IS_ADVERSE_WEATHER` | BOOLEAN | TRUE when Rain, Snow, or high wind. Use this for simple good-weather vs. bad-weather comparisons |
 | `PICKUP_YEAR` | INT | 2025 or 2026. Use this for year-over-year comparisons |
@@ -97,7 +97,7 @@ This is the main table to use. It has 30,251 rows (pre-aggregated from 38M trips
 
 - **Cash tip trap:** Payment type "Cash" always shows $0 tips because cash tips are not recorded by the meter. Do not include cash trips in any tip analysis, or explicitly call this out.
 - **Year-over-year:** Both years cover January through May only. Comparisons are fair month-to-month.
-- **Borough coverage:** Manhattan dominates trip volume. Staten Island and EWR have very few trips.
+- **Borough coverage:** Manhattan dominates trip volume. Staten Island has very few trips.
 
 ---
 
