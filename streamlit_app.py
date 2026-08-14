@@ -245,6 +245,12 @@ else:
                 marker=dict(size=6, color="#ff7f0e"),
                 hovertemplate="<b>Weekend</b><br>Hour: %{x}:00<br>Avg Trips: %{y:,.0f}<extra></extra>"
             ))
+            fig.add_vrect(x0=6.5, x1=8.5, fillcolor="gray", opacity=0.1,
+                          line_width=0, annotation_text="Rush", annotation_position="top left",
+                          annotation_font=dict(size=11, color="gray"))
+            fig.add_vrect(x0=16.5, x1=18.5, fillcolor="gray", opacity=0.1,
+                          line_width=0, annotation_text="Rush", annotation_position="top left",
+                          annotation_font=dict(size=11, color="gray"))
             fig.update_layout(
                 title=dict(text=f"Average Hourly Demand: Weekday vs. Weekend ({borough})",
                            x=0.5, xanchor="center", font=dict(size=20, color=TEXT_COLOR)),
