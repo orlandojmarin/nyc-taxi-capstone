@@ -259,7 +259,8 @@ If you sum individual components instead of using `total_amount`, you'll double-
 | :--- | :--- | :--- | :--- |
 | Zero-distance trips with real fares | 1,009,593 (2.7%) | Likely short hops where GPS didn't register movement. Fares and durations are normal. | Average distance metrics are slightly understated. |
 | Zero total_amount trips | 6,228 (0.016%) | Mostly disputes (type 4) and no-charge (type 3). Real events, not errors. | Negligible effect on any metric. |
-| Unknown/N/A pickup borough | 75,406 (0.2%) | Zone IDs 264/265 are TLC catch-all codes. Excluded from mart but kept in fct_trips. | Borough-level analysis misses 0.2% of trips. Not material. |
+| Unknown/N/A pickup borough | 75,639 (0.2%) | Zone IDs 264/265 are TLC catch-all codes. Excluded from mart but kept in fct_trips. | Borough-level analysis misses 0.2% of trips. Not material. |
+| EWR (Newark Airport) pickup borough | 4,386 (0.01%) | Newark Airport is in New Jersey, not an NYC borough. Our weather data is from Central Park and does not represent EWR conditions. JFK and LGA are categorized under Queens in the zone lookup, so including EWR alone would be inconsistent. Excluded from mart but kept in fct_trips. | Negligible. 4,386 trips out of 38M. |
 
 ---
 

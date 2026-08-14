@@ -36,14 +36,14 @@ Step-by-step row counts showing exactly what happens to the data at each operati
 | 10 | Filter to valid trips | 39,224,735 | 38,053,445 | -1,171,290 | fct_trips keeps only IS_VALID = TRUE |
 | 11 | Join borough names | 38,053,445 | 38,053,445 | 0 lost | Left join to stg_zones for pickup/dropoff borough |
 | 12 | Join weather | 38,053,445 | 38,053,445 | 0 lost | Left join to stg_weather on date + hour (100% match rate) |
-| 13 | Exclude non-borough zones | 38,053,445 | 37,978,039 | -75,406 | mart_weather_demand removes Unknown/N/A (zone IDs 264/265) |
-| 14 | Aggregate for dashboard | 37,978,039 | 30,251 | grouped | Group by borough, weather, year, month, hour, rush/night/weekend, payment_type (labeled) |
+| 13 | Exclude non-NYC boroughs | 38,053,445 | 37,973,420 | -80,025 | mart_weather_demand removes Unknown/N/A (zone IDs 264/265) and EWR (Newark Airport, not an NYC borough) |
+| 14 | Aggregate for dashboard | 37,973,420 | 28,970 | grouped | Group by borough, weather, year, month, hour, rush/night/weekend, payment_type (labeled) |
 
 **Summary:**
 - Source to Bronze: 0 rows lost (perfect 1:1 load)
 - Bronze to Silver: 0 rows removed (DQ issues flagged, not deleted)
 - Silver to Gold: 1,171,290 invalid rows filtered (3.0% of total)
-- Gold fact to Gold mart: 75,406 non-borough trips excluded (0.2% of valid trips), then aggregated to 30,251 rows (fewer than before payment_type was mapped to labels, since types 0 and 5 now both resolve to 'Unknown' and merge)
+- Gold fact to Gold mart: 80,025 non-NYC-borough trips excluded (0.2% of valid trips; Unknown/N/A zone IDs 264/265 plus EWR/Newark Airport), then aggregated to 28,970 rows (fewer than before payment_type was mapped to labels, since types 0 and 5 now both resolve to 'Unknown' and merge)
 
 ---
 
@@ -191,13 +191,13 @@ Joins `stg_trips` (filtered to `IS_VALID = TRUE`) with `stg_zones` (for pickup a
 
 **File:** `dbt/models/marts/mart_weather_demand.sql`
 
-Aggregates fct_trips by: pickup_borough, weather_category, is_adverse_weather, pickup_year, pickup_month, pickup_hour, is_rush_hour, is_night, is_weekend, payment_type (now a labeled string). Excludes trips where pickup_borough is 'Unknown' or 'N/A' (zone IDs 264/265 that cannot be attributed to a real NYC borough).
+Aggregates fct_trips by: pickup_borough, weather_category, is_adverse_weather, pickup_year, pickup_month, pickup_hour, is_rush_hour, is_night, is_weekend, payment_type (now a labeled string). Excludes trips where pickup_borough is 'Unknown', 'N/A' (zone IDs 264/265), or 'EWR' (Newark Airport, which is in New Jersey, not an NYC borough).
 
 Metrics: trip_count, total_revenue, total_fares, total_tips, total_tolls, total_congestion_surcharge, total_cbd_fee, avg_fare_total, avg_tip, avg_duration_minutes, avg_distance.
 
-**Why:** Pre-aggregated table (30,251 rows) that Tableau/Streamlit can query instantly. Contains every dimension needed to answer the question: borough (where), weather (condition), year/month (when/YoY), and payment_type as a readable label (revenue breakdown). Keeps the dashboard fast without hitting 38M rows on every chart. Excluding Unknown/N/A is a defensible DQ decision: our question is about NYC boroughs, so trips that cannot be attributed to one are excluded rather than grouped into a misleading category.
+**Why:** Pre-aggregated table (28,970 rows) that Tableau/Streamlit can query instantly. Contains every dimension needed to answer the question: borough (where), weather (condition), year/month (when/YoY), and payment_type as a readable label (revenue breakdown). Keeps the dashboard fast without hitting 38M rows on every chart. Excluding Unknown/N/A is a defensible DQ decision: our question is about NYC boroughs, so trips that cannot be attributed to one are excluded rather than grouped into a misleading category. EWR is excluded because it is not an NYC borough, our weather data is from Central Park (not Newark), and it contains only 4,386 trips (0.01% of the dataset), which is statistically meaningless for borough-level analysis.
 
-**Result:** 30,251 rows.
+**Result:** 28,970 rows.
 
 ### Step 14: Build dim_zones and dim_weather
 
@@ -253,7 +253,7 @@ python pipeline/orchestrate.py
 | Silver | STG_ZONES | 265 |
 | Silver | STG_WEATHER | 7,248 |
 | Gold | FCT_TRIPS | 38,053,445 |
-| Gold | MART_WEATHER_DEMAND | 30,251 |
+| Gold | MART_WEATHER_DEMAND | 28,970 |
 | Gold | DIM_ZONES | 265 |
 | Gold | DIM_WEATHER | 7,248 |
 
