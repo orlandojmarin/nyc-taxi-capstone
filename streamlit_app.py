@@ -590,7 +590,7 @@ else:
     st.markdown("---")
 
     # --- Chart 6: Revenue per adverse-weather hour, rush vs off-peak ---
-    st.subheader("\U0001f4b8 Storm-Hour Revenue Losses Concentrate During Rush Hour")
+    st.subheader("\U0001f4b8 Adverse-Weather-Hour Revenue Losses Concentrate During Rush Hour")
 
     with st.expander("How to read this chart"):
         st.markdown("""
@@ -599,8 +599,8 @@ else:
 
         - **Gray bars** = 2025
         - **Navy bars** = 2026
-        - **Negative values** = revenue lost per storm-hour compared to a clear-weather hour
-        - **Positive values** = revenue gained per storm-hour (riders switching to taxis)
+        - **Negative values** = revenue lost per adverse-weather hour compared to a clear-weather hour
+        - **Positive values** = revenue gained per adverse-weather hour (riders switching to taxis)
         - **Rush Hour** = 7-9 AM and 5-7 PM weekdays
         - **Off-Peak** = all other hours
         - Each tab shows one borough
@@ -670,7 +670,7 @@ else:
             ))
             fig.add_hline(y=0, line_dash="dash", line_color="gray")
             fig.update_layout(
-                title=dict(text=f"Revenue Impact per Storm-Hour ({borough})",
+                title=dict(text=f"Revenue Impact per Adverse-Weather Hour ({borough})",
                            x=0.5, xanchor="center", font=dict(size=20, color=TEXT_COLOR)),
                 barmode="group", height=450,
                 plot_bgcolor=BG_COLOR, paper_bgcolor=PAPER_COLOR,
@@ -690,8 +690,8 @@ else:
         hailing cabs). In 2026, that pattern reversed, and the losses concentrate heavily during
         rush hour, where per-hour revenue is highest.
 
-        **Business implication:** A single storm-hour during rush hour now costs more in lost revenue
-        than several off-peak storm-hours combined. This supports a targeted response: pre-position
+        **Business implication:** A single adverse-weather hour during rush hour now costs more in lost revenue
+        than several off-peak adverse-weather hours combined. This supports a targeted response: pre-position
         vehicles before forecasted storms, prioritize rush-hour coverage, and consider dynamic
         incentives for drivers to stay on the road during adverse conditions.
         """)
