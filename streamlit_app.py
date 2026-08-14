@@ -42,11 +42,9 @@ st.set_page_config(
 )
 
 st.title("NYC Taxi Capstone: Data Explorer")
-st.markdown(
-    "**Team AMO** (Ariana Lopez, Maryam Choudhury, Orlando Marin) | "
-    "Analytical Question: *How does adverse weather affect taxi "
-    "demand across NYC boroughs, and how did those patterns shift between 2025 and 2026?*"
-)
+st.markdown("**Created by Team AMO:** Ariana Lopez, Maryam Choudhury, and Orlando Marin")
+st.markdown("""Analytical Question: *How does adverse weather (rain and snow) affect taxi demand 
+            across NYC boroughs, and how did those patterns shift between 2025 and 2026?*""")
 
 BG_COLOR = "white"
 PAPER_COLOR = "#f5f5f5"
@@ -126,7 +124,7 @@ else:
     boroughs = sorted(df["PICKUP_BOROUGH"].unique())
 
     # --- Chart 1: Year-over-year monthly trip volume by borough ---
-    st.subheader("\U0001f695 Monthly Trip Volume Shows Consistent Year-over-Year Growth")
+    st.subheader("\U0001f695 Overall Taxi Volume Holds Steady (+0.8% YoY)")
 
     with st.expander("How to read this chart"):
         st.markdown("""
@@ -183,9 +181,8 @@ else:
 
     with st.expander("Show interpretation"):
         st.markdown("""
-        Most boroughs show a consistent upward trend from January through May in both years,
-        reflecting seasonal demand patterns. 2026 generally tracks above 2025, suggesting
-        year-over-year growth in taxi usage across the city.
+        Takeaway: Overall taxi trip volume in NYC grew by 0.8% YoY, but that stability hides a geographic shift: The Bronx and Brooklyn each grew by
+        about 40%, while Manhattan, which accounts for the majority of taxi trips in NYC, declined by 0.7% YoY.
         """)
 
     st.markdown("---")
@@ -200,8 +197,7 @@ else:
 
         - **Green line** = Weekdays (Mon-Fri)
         - **Orange line** = Weekends (Sat-Sun)
-        - Values are normalized: total trips at each hour divided by the number of weekday or
-          weekend days, so the lines are directly comparable despite more weekdays existing
+        - Totals are divided by the number of days in each group so the lines are directly comparable
         - Each tab shows one borough
         - Hover over points for exact values
         """)
@@ -246,7 +242,7 @@ else:
                 hovertemplate="<b>Weekend</b><br>Hour: %{x}:00<br>Avg Trips: %{y:,.0f}<extra></extra>"
             ))
             fig.add_vrect(x0=7, x1=9, fillcolor="gray", opacity=0.1,
-                          line_width=0, annotation_text="Rush", annotation_position="top left",
+                          line_width=0, annotation_text="Rush Hour", annotation_position="top left",
                           annotation_font=dict(size=11, color="gray"))
             fig.add_vrect(x0=17, x1=19, fillcolor="gray", opacity=0.1,
                           line_width=0, annotation_text="Rush", annotation_position="top left",
