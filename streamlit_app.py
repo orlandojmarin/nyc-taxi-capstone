@@ -280,7 +280,7 @@ else:
     st.markdown("---")
 
     # --- Chart 3: Average trip cost by borough, tabbed by weather category ---
-    st.subheader("\U0001f4b0 Average Trip Cost Remains Stable Across Weather Conditions")
+    st.subheader("\U0001f4b3 Average Trip Cost Remains Stable Across Weather Conditions")
 
     with st.expander("How to read this chart"):
         st.markdown("""
@@ -590,7 +590,7 @@ else:
     st.markdown("---")
 
     # --- Chart 6: Revenue per adverse-weather hour, rush vs off-peak ---
-    st.subheader("\U0001f4b8 Adverse-Weather-Hour Revenue Losses Concentrate During Rush Hour")
+    st.subheader("\U0001f4b0 Adverse-Weather-Hour Revenue Losses Concentrate During Rush Hour")
 
     with st.expander("How to read this chart"):
         st.markdown("""
