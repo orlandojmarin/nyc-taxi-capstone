@@ -263,7 +263,7 @@ else:
 
     with st.expander("Show interpretation"):
         st.markdown("""
-        Weekday demand shows sharp peaks during morning and evening rush hours (8 AM and 5-7 PM),
+        Weekday demand shows sharp peaks during morning and evening rush hours (7-9 AM and 5-7 PM),
         while weekend demand is more evenly distributed throughout the day, rising gradually from
         late morning through the evening. This pattern matters for the weather analysis: if adverse
         weather hits during rush hour on a weekday, it disrupts a high-demand period. The same
@@ -595,7 +595,7 @@ else:
         - **Navy bars** = 2026
         - **Negative values** = revenue lost per storm-hour compared to a clear-weather hour
         - **Positive values** = revenue gained per storm-hour (riders switching to taxis)
-        - **Rush Hour** = 7-10 AM and 4-7 PM weekdays
+        - **Rush Hour** = 7-9 AM and 5-7 PM weekdays
         - **Off-Peak** = all other hours
         - Each tab shows one borough
         - This quantifies the finding from Charts 4 and 5 in dollars, and shows when the
@@ -609,9 +609,9 @@ else:
                           (mart_df["IS_RUSH_HOUR"] == rush_filter)]
             wf = weather_ref.copy()
             if rush_filter:
-                wf = wf[wf["WEATHER_HOUR"].isin([7, 8, 9, 16, 17, 18])]
+                wf = wf[wf["WEATHER_HOUR"].isin([7, 8, 17, 18])]
             else:
-                wf = wf[~wf["WEATHER_HOUR"].isin([7, 8, 9, 16, 17, 18])]
+                wf = wf[~wf["WEATHER_HOUR"].isin([7, 8, 17, 18])]
 
             for year in [2025, 2026]:
                 clear_hrs = len(wf[(wf["YEAR"] == year) & (wf["IS_ADVERSE_WEATHER"] == False)])
