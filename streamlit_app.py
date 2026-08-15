@@ -453,7 +453,7 @@ else:
 
     with st.expander("Show interpretation"):
         st.markdown("""
-        In this chart, positive bars mean more trips per hour during rain or snow compared to clear weather, and negative bars mean fewer
+        Takeaway: In this chart, positive bars mean more trips per hour during rain or snow compared to clear weather, and negative bars mean fewer
         trips per hour when there's bad weather. In 2025, bad weather meant more taxi trips, but in 2026 it lowered demand.
         During the day, all 5 boroughs show reduced demand during adverse weather in 2026, by as much as 24 percent in The Bronx and Queens.
         """)
@@ -554,7 +554,7 @@ else:
 
     with st.expander("Show interpretation"):
         st.markdown("""
-        This chart sheds light on why demand flipped in 2026. Rain actually increases ridership in both years, 
+        Takeaway: This chart sheds light on why demand flipped in 2026. Rain actually increases ridership in both years, 
         but snow decreases it, and the snow in 2026 was far more severe. The snow storms in 2026 drove the overall
         demand decline during bad weather.
         """)
@@ -657,7 +657,7 @@ else:
 
     with st.expander("Show interpretation"):
         st.markdown("""
-        This chart puts a dollar amount on the demand shift. For example, in Manhattan during rush hour, rain and snow
+        Takeaway: This chart puts a dollar amount on the demand shift. For example, in Manhattan during rush hour, rain and snow
         went from adding $31K/hr in revenue in 2025 to costing over $58K/hr in 2026. That's a swing of nearly $90K/hr YoY,
         concentrated in high-demand periods.
 
