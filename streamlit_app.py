@@ -197,6 +197,7 @@ else:
 
         - **Green line** = Weekdays (Mon-Fri)
         - **Orange line** = Weekends (Sat-Sun)
+        - **Shaded regions** = Rush hours (7-9 AM and 5-7 PM), when commuters typically travel to and from work
         - Totals are divided by the number of days in each group so the lines are directly comparable
         - Each tab shows one borough
         - Hover over points for exact values
@@ -245,7 +246,7 @@ else:
                           line_width=0, annotation_text="Rush Hour", annotation_position="top left",
                           annotation_font=dict(size=11, color="gray"))
             fig.add_vrect(x0=17, x1=19, fillcolor="gray", opacity=0.1,
-                          line_width=0, annotation_text="Rush", annotation_position="top left",
+                          line_width=0, annotation_text="Rush Hour", annotation_position="top left",
                           annotation_font=dict(size=11, color="gray"))
             fig.update_layout(
                 title=dict(text=f"Average Hourly Demand: Weekday vs. Weekend ({borough})",
@@ -265,12 +266,9 @@ else:
 
     with st.expander("Show interpretation"):
         st.markdown("""
-        Weekday demand shows sharp peaks during morning and evening rush hours (7-9 AM and 5-7 PM),
-        while weekend demand is more evenly distributed throughout the day, rising gradually from
-        late morning through the evening. This pattern matters for the weather analysis: if adverse
-        weather hits during rush hour on a weekday, it disrupts a high-demand period. The same
-        weather on a weekend would affect a flatter demand curve, potentially showing a smaller
-        absolute impact.
+        Takeaway: Taxi demand increases rapidly during weekday rush hours, while weekends have a more gradual increase in demand throughout the day. 
+        So when it rains or snows during rush hours, it's likely to impact more taxi trips and have a larger impact on taxi revenue 
+        than it would on the weekend, which we'll explore shortly.
         """)
 
     st.markdown("---")
@@ -287,7 +285,7 @@ else:
         - **Navy bars** = 2026
         - Each tab shows a different weather category
         - Hover over bars for exact dollar amounts
-        - Tips are excluded for consistency (cash tips are not recorded in TLC data)
+        - Tips are excluded for consistency (cash tips are not recorded in the data)
         """)
 
     weather_cat_emojis = {"Clear": "☀️ Clear", "Cloudy": "☁️ Cloudy", "Drizzle": "\U0001f4a7 Drizzle", "Rain": "☂️ Rain", "Snow": "❄️ Snow"}
@@ -357,23 +355,15 @@ else:
 
     with st.expander("Show interpretation"):
         st.markdown("""
-        Average trip costs (excluding tips) are relatively consistent across weather categories
-        within each borough, suggesting that weather does not significantly drive up per-trip costs.
-        Year-over-year changes are modest, with slight increases in 2026 likely reflecting inflation
-        or fare adjustments rather than weather-driven surge pricing. Tips are excluded because cash
-        tips are not recorded in TLC data, which would skew comparisons across payment types.
-
-        Notably, trips during adverse weather are shorter in both distance and duration (e.g.,
-        Queens snow trips average 26.8 min vs. 34.3 min during clear weather in 2026), yet revenue
-        per trip remains stable because base fares, surcharges, and congestion fees keep the per-trip
-        total consistent regardless of distance. This confirms that weather's primary impact on
-        revenue is through *volume* (fewer trips), not through changes in what each trip earns.
+        Takeaway: Surprisingly, the cost of a taxi trip isn't impacted by weather. Average fares
+        stay consistent across all conditions and boroughs. This confirms that weather's impact
+        on revenue is driven by the number of rides taken, which we'll quantify next.
         """)
 
     st.markdown("---")
 
     # --- Chart 4: Per-hour demand change during adverse weather ---
-    st.subheader("\U0001f327️❄️ Weather's Effect on Taxi Demand Shifted Between 2025 and 2026")
+    st.subheader("☂️❄️ Weather's Effect on Taxi Demand Shifted Between 2025 and 2026")
 
     with st.expander("How to read this chart"):
         st.markdown("""
@@ -463,12 +453,9 @@ else:
 
     with st.expander("Show interpretation"):
         st.markdown("""
-        Splitting by time of day controls for the possibility that adverse weather clusters at night
-        (when demand is naturally lower). During **daytime hours**, the 2025 pattern holds: adverse
-        weather *increased* taxi demand in Manhattan and Brooklyn as riders switched from walking or
-        transit. In 2026, daytime adverse weather drove demand *down*, suggesting a behavioral shift.
-        The **nighttime tab** shows whether this pattern persists when baseline demand is already low,
-        helping confirm the finding is not simply a time-of-day artifact.
+        In this chart, positive bars mean more trips per hour during rain or snow compared to clear weather, and negative bars mean fewer
+        trips per hour when there's bad weather. In 2025, bad weather meant more taxi trips, but in 2026 it lowered demand.
+        During the day, all 5 boroughs show reduced demand during adverse weather in 2026, by as much as 24 percent in The Bronx and Queens.
         """)
 
     st.markdown("---")
@@ -552,13 +539,13 @@ else:
             ))
             fig.add_hline(y=0, line_dash="dash", line_color="gray")
             fig.update_layout(
-                title=dict(text=f"Demand Change by Weather Type ({borough})",
+                title=dict(text=f"Demand Change by Adverse Weather Type ({borough})",
                            x=0.5, xanchor="center", font=dict(size=20, color=TEXT_COLOR)),
                 barmode="group", height=450,
                 plot_bgcolor=BG_COLOR, paper_bgcolor=PAPER_COLOR,
                 font=dict(color=TEXT_COLOR, size=14),
                 margin=dict(l=50, r=50, t=70, b=50),
-                xaxis=dict(title="Weather Type", title_font=dict(size=16), tickfont=dict(size=14)),
+                xaxis=dict(title="Adverse Weather Type", title_font=dict(size=16), tickfont=dict(size=14)),
                 yaxis=dict(title="% Change vs. Clear Weather", title_font=dict(size=16),
                            tickfont=dict(size=14), ticksuffix="%", zeroline=True),
                 legend=dict(font=dict(size=14))
@@ -567,20 +554,9 @@ else:
 
     with st.expander("Show interpretation"):
         st.markdown("""
-        Breaking adverse weather into Rain and Snow reveals a critical distinction: **rain consistently
-        boosts taxi demand** (people avoid walking in the rain and switch to cabs), while **snow
-        suppresses it** (people stay home, roads become impassable, drivers pull off the road).
-
-        The 2025-to-2026 shift seen in Chart 4 is largely driven by snow's growing negative impact.
-        This is not a behavioral mystery: **2026 had a dramatically worse snow season.** Total snowfall
-        more than doubled (11.6 in vs. 25.2 in), the longest continuous storm grew from 11 to 27 hours,
-        and average snow accumulation tripled (0.14 in vs. 0.41 in on the ground). Meanwhile, rain was
-        actually *lighter* in 2026 (fewer hours, lower intensity), which explains why rain's demand
-        boost weakened but did not flip negative in most boroughs.
-
-        This matters for recommendations: rain remains a revenue *opportunity* (more riders switching
-        to cabs), while snow, especially prolonged heavy snow, is a *risk* that scales with storm
-        severity and requires proactive operational response.
+        This chart sheds light on why demand flipped in 2026. Rain actually increases ridership in both years, 
+        but snow decreases it, and the snow in 2026 was far more severe. The snow storms in 2026 drove the overall
+        demand decline during bad weather.
         """)
 
     st.markdown("---")
@@ -681,13 +657,11 @@ else:
 
     with st.expander("Show interpretation"):
         st.markdown("""
-        This chart translates the demand shift into dollars and reveals **when** the loss is most
-        acute. In 2025, adverse weather during rush hour often *increased* revenue (more riders
-        hailing cabs). In 2026, that pattern reversed, and the losses concentrate heavily during
-        rush hour, where per-hour revenue is highest.
+        This chart puts a dollar amount on the demand shift. For example, in Manhattan during rush hour, rain and snow
+        went from adding $31K/hr in revenue in 2025 to costing over $58K/hr in 2026. That's a swing of nearly $90K/hr YoY,
+        concentrated in high-demand periods.
 
-        **Business implication:** A single adverse-weather hour during rush hour now costs more in lost revenue
-        than several off-peak adverse-weather hours combined. This supports a targeted response: pre-position
-        vehicles before forecasted storms, prioritize rush-hour coverage, and consider dynamic
-        incentives for drivers to stay on the road during adverse conditions.
+        A limitation of the data is that it can't distinguish whether the revenue loss comes from fewer drivers or fewer riders, 
+        but it does pinpoint exactly when and where the loss is greatest, giving decision-makers in the NYC taxi industry 
+        a clear starting point.
         """)
