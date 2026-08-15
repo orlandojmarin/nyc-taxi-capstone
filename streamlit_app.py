@@ -658,10 +658,10 @@ else:
     with st.expander("Show interpretation"):
         st.markdown("""
         Takeaway: This chart puts a dollar amount on the demand shift. For example, in Manhattan during rush hour, rain and snow
-        went from adding $31K/hr in revenue in 2025 to costing over $58K/hr in 2026. That's a swing of nearly $90K/hr YoY,
+        went from adding \$31K/hr in revenue in 2025 to costing over \$58K/hr in 2026. That's a swing of nearly \$90K/hr YoY,
         concentrated in high-demand periods.
 
-        A limitation of the data is that it can't distinguish whether the revenue loss comes from fewer drivers or fewer riders, 
-        but it does pinpoint exactly when and where the loss is greatest, giving decision-makers in the NYC taxi industry 
+        A limitation of the data is that it can't distinguish whether the revenue loss comes from fewer drivers or fewer riders,
+        but it does pinpoint exactly when and where the loss is greatest, giving decision-makers in the NYC taxi industry
         a clear starting point.
         """)
