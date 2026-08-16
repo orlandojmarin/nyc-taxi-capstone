@@ -181,7 +181,8 @@ else:
 
     with st.expander("Show interpretation"):
         st.markdown("""
-        Takeaway: Overall taxi trip volume in NYC grew by 0.8% YoY, but that stability hides a geographic shift: The Bronx and Brooklyn each grew by
+        Takeaway: In this dashboard, the gray lines and bars represent 2025, while the blue lines and bars represent 2026. 
+        Overall taxi demand in NYC grew by 0.8% YoY, so relatively flat. Boroughs like The Bronx and Brooklyn each grew by 
         about 40%, while Manhattan, which accounts for the majority of taxi trips in NYC, declined by 0.7% YoY.
         """)
 
@@ -266,9 +267,10 @@ else:
 
     with st.expander("Show interpretation"):
         st.markdown("""
-        Takeaway: Taxi demand increases rapidly during weekday rush hours, while weekends have a more gradual increase in demand throughout the day. 
-        So when it rains or snows during rush hours, it's likely to impact more taxi trips and have a larger impact on taxi revenue 
-        than it would on the weekend, which we'll explore shortly.
+        Takeaway: In this chart, the green line represents taxi demand on weekdays, while the orange line represents the taxi demand on weekends. 
+        Taxi demand increases rapidly during weekday rush hours, while weekends have a more gradual increase in demand throughout the day. 
+        So when there's bad weather during weekday rush hours, it's likely to have a larger impact on taxi revenue 
+        than that same weather would on the weekend, which we'll explore shortly.
         """)
 
     st.markdown("---")
@@ -357,7 +359,7 @@ else:
         st.markdown("""
         Takeaway: Surprisingly, the cost of a taxi trip isn't impacted by weather. Average fares
         stay consistent across all conditions and boroughs. This confirms that weather's impact
-        on revenue is driven by the number of rides taken, which we'll quantify next.
+        on revenue is driven by the number of rides taken, as opposed to the cost per trip, which we'll explore shortly.
         """)
 
     st.markdown("---")
@@ -453,9 +455,9 @@ else:
 
     with st.expander("Show interpretation"):
         st.markdown("""
-        Takeaway: In this chart, positive bars mean more trips per hour during rain or snow compared to clear weather, and negative bars mean fewer
-        trips per hour when there's bad weather. In 2025, bad weather meant more taxi trips, but in 2026 it lowered demand.
-        During the day, all 5 boroughs show reduced demand during adverse weather in 2026, by as much as 24 percent in The Bronx and Queens.
+        Takeaway: In this chart and the next, positive bars mean more trips per hour during rain or snow compared to clear weather, and negative bars mean fewer
+        trips per hour when there's bad weather. In 2025, bad weather increased demand, but in 2026 it lowered demand.
+        In 2026 during the day, all 5 boroughs show reduced demand during adverse weather, by as much as 24 percent in The Bronx and Queens.
         """)
 
     st.markdown("---")
@@ -554,9 +556,8 @@ else:
 
     with st.expander("Show interpretation"):
         st.markdown("""
-        Takeaway: This chart sheds light on why demand flipped in 2026. Rain actually increases ridership in both years, 
-        but snow decreases it, and the snow in 2026 was far more severe. The snow storms in 2026 drove the overall
-        demand decline during bad weather.
+        Takeaway: This chart sheds light on why demand shifted between 2025 and 2026. Rain actually increases ridership in both years, 
+        however, the snow in 2026 was far more severe than in 2025, driving the overall demand decline during bad weather.
         """)
 
     st.markdown("---")
@@ -657,7 +658,7 @@ else:
 
     with st.expander("Show interpretation"):
         st.markdown("""
-        Takeaway: This chart puts a dollar amount on the demand shift. For example, in Manhattan during rush hour, rain and snow
+        Takeaway: This chart puts a dollar amount on the YoY demand shift. For example, in Manhattan during rush hour, rain and snow
         went from adding \$31K/hr in revenue in 2025 to costing over \$58K/hr in 2026. That's a swing of nearly \$90K/hr YoY,
         concentrated in high-demand periods.
 
