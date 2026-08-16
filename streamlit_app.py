@@ -359,7 +359,7 @@ else:
         st.markdown("""
         Takeaway: Surprisingly, the cost of a taxi trip isn't impacted by weather. Average fares
         stay consistent across all conditions and boroughs. This confirms that weather's impact
-        on revenue is driven by the number of rides taken, as opposed to the cost per trip, which we'll explore shortly.
+        on revenue is driven by the number of rides taken, as opposed to the cost per trip.
         """)
 
     st.markdown("---")
