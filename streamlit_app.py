@@ -178,7 +178,7 @@ else:
                            tickfont=dict(size=14, color=theme_text)),
                 yaxis=dict(title="Total Trips", title_font=dict(size=16, color=theme_text),
                            tickfont=dict(size=14, color=theme_text)),
-                legend=dict(font=dict(size=14))
+                legend=dict(font=dict(size=14, color=theme_text))
             )
             st.plotly_chart(fig, use_container_width=True)
 
