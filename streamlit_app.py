@@ -165,16 +165,19 @@ else:
                 marker=dict(size=8, color=COLOR_2026),
                 hovertemplate="<b>2026</b><br>Month: %{x}<br>Trips: %{y:,.0f}<extra></extra>"
             ))
+            theme_text = st.get_option("theme.textColor") or TEXT_COLOR
             fig.update_layout(
                 title=dict(text=f"Monthly Trip Volume ({borough})", x=0.5, xanchor="center",
-                           font=dict(size=20, color=TEXT_COLOR)),
+                           font=dict(size=20, color=theme_text)),
                 height=450,
                 plot_bgcolor=BG_COLOR,
                 paper_bgcolor=PAPER_COLOR,
-                font=dict(color=TEXT_COLOR, size=14),
+                font=dict(color=theme_text, size=14),
                 margin=dict(l=50, r=50, t=70, b=50),
-                xaxis=dict(title="Month", title_font=dict(size=16), tickfont=dict(size=14)),
-                yaxis=dict(title="Total Trips", title_font=dict(size=16), tickfont=dict(size=14)),
+                xaxis=dict(title="Month", title_font=dict(size=16, color=theme_text),
+                           tickfont=dict(size=14, color=theme_text)),
+                yaxis=dict(title="Total Trips", title_font=dict(size=16, color=theme_text),
+                           tickfont=dict(size=14, color=theme_text)),
                 legend=dict(font=dict(size=14))
             )
             st.plotly_chart(fig, use_container_width=True)
