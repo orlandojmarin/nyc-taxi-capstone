@@ -417,20 +417,26 @@ else:
         changes_2025 = [d for d in borough_changes if d["year"] == 2025]
         changes_2026 = [d for d in borough_changes if d["year"] == 2026]
         fig = go.Figure()
+        vals_2025 = [d["pct_change"] for d in changes_2025]
+        vals_2026 = [d["pct_change"] for d in changes_2026]
         fig.add_trace(go.Bar(
             x=[d["borough"] for d in changes_2025],
-            y=[d["pct_change"] for d in changes_2025],
+            y=vals_2025,
             name="2025",
             marker_color=COLOR_2025,
             marker_line=dict(width=1, color="black"),
+            text=[f"{v:+.1f}%" for v in vals_2025],
+            textposition="outside", textfont=dict(size=12),
             hovertemplate="<b>%{x}</b><br>2025 Change: %{y:+.2f}%<extra></extra>"
         ))
         fig.add_trace(go.Bar(
             x=[d["borough"] for d in changes_2026],
-            y=[d["pct_change"] for d in changes_2026],
+            y=vals_2026,
             name="2026",
             marker_color=COLOR_2026,
             marker_line=dict(width=1, color="black"),
+            text=[f"{v:+.1f}%" for v in vals_2026],
+            textposition="outside", textfont=dict(size=12),
             hovertemplate="<b>%{x}</b><br>2026 Change: %{y:+.2f}%<extra></extra>"
         ))
         fig.add_hline(y=0, line_dash="dash", line_color="gray")
