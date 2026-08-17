@@ -252,19 +252,20 @@ else:
             fig.add_vrect(x0=17, x1=19, fillcolor="gray", opacity=0.1,
                           line_width=0, annotation_text="Rush Hour", annotation_position="top left",
                           annotation_font=dict(size=11, color="gray"))
+            theme_text = st.get_option("theme.textColor") or TEXT_COLOR
             fig.update_layout(
                 title=dict(text=f"Average Hourly Demand: Weekday vs. Weekend ({borough})",
-                           x=0.5, xanchor="center", font=dict(size=20, color=TEXT_COLOR)),
+                           x=0.5, xanchor="center", font=dict(size=20, color=theme_text)),
                 height=450,
                 plot_bgcolor=BG_COLOR,
                 paper_bgcolor=PAPER_COLOR,
-                font=dict(color=TEXT_COLOR, size=14),
+                font=dict(color=theme_text, size=14),
                 margin=dict(l=50, r=50, t=70, b=50),
-                xaxis=dict(title="Hour of Day", title_font=dict(size=16), tickfont=dict(size=14),
-                           tickmode="linear", dtick=2),
-                yaxis=dict(title="Avg Trips per Hour", title_font=dict(size=16),
-                           tickfont=dict(size=14)),
-                legend=dict(font=dict(size=14))
+                xaxis=dict(title="Hour of Day", title_font=dict(size=16, color=theme_text),
+                           tickfont=dict(size=14, color=theme_text), tickmode="linear", dtick=2),
+                yaxis=dict(title="Avg Trips per Hour", title_font=dict(size=16, color=theme_text),
+                           tickfont=dict(size=14, color=theme_text)),
+                legend=dict(font=dict(size=14, color=theme_text))
             )
             st.plotly_chart(fig, use_container_width=True)
 
@@ -342,19 +343,21 @@ else:
                 textfont=dict(size=11),
                 hovertemplate="<b>%{x}</b><br>2026 Avg Cost: $%{y:.2f}<extra></extra>"
             ))
+            theme_text = st.get_option("theme.textColor") or TEXT_COLOR
             fig.update_layout(
                 title=dict(text=f"Average Trip Cost by Borough ({weather_cat})",
-                           x=0.5, xanchor="center", font=dict(size=20, color=TEXT_COLOR)),
+                           x=0.5, xanchor="center", font=dict(size=20, color=theme_text)),
                 barmode="group",
                 height=500,
                 plot_bgcolor=BG_COLOR,
                 paper_bgcolor=PAPER_COLOR,
-                font=dict(color=TEXT_COLOR, size=14),
+                font=dict(color=theme_text, size=14),
                 margin=dict(l=50, r=50, t=70, b=80),
-                xaxis=dict(title="Borough", title_font=dict(size=16), tickfont=dict(size=14)),
-                yaxis=dict(title="Avg Cost per Trip ($)", title_font=dict(size=16),
-                           tickfont=dict(size=14), tickprefix="$"),
-                legend=dict(font=dict(size=14))
+                xaxis=dict(title="Borough", title_font=dict(size=16, color=theme_text),
+                           tickfont=dict(size=14, color=theme_text)),
+                yaxis=dict(title="Avg Cost per Trip ($)", title_font=dict(size=16, color=theme_text),
+                           tickfont=dict(size=14, color=theme_text), tickprefix="$"),
+                legend=dict(font=dict(size=14, color=theme_text))
             )
             st.plotly_chart(fig, use_container_width=True)
 
@@ -431,20 +434,23 @@ else:
             hovertemplate="<b>%{x}</b><br>2026 Change: %{y:+.2f}%<extra></extra>"
         ))
         fig.add_hline(y=0, line_dash="dash", line_color="gray")
+        theme_text = st.get_option("theme.textColor") or TEXT_COLOR
         fig.update_layout(
             title=dict(text=f"Hourly Demand Change During Adverse Weather ({subtitle})",
-                       x=0.5, xanchor="center", font=dict(size=20, color=TEXT_COLOR)),
+                       x=0.5, xanchor="center", font=dict(size=20, color=theme_text)),
             barmode="group",
             height=500,
             plot_bgcolor=BG_COLOR,
             paper_bgcolor=PAPER_COLOR,
-            font=dict(color=TEXT_COLOR, size=14),
+            font=dict(color=theme_text, size=14),
             margin=dict(l=50, r=50, t=70, b=50),
-            xaxis=dict(title="Borough", title_font=dict(size=16), tickfont=dict(size=14)),
+            xaxis=dict(title="Borough", title_font=dict(size=16, color=theme_text),
+                       tickfont=dict(size=14, color=theme_text)),
             yaxis=dict(title="% Change in Trips/Hour (Adverse vs. Clear)",
-                       title_font=dict(size=16), tickfont=dict(size=14), ticksuffix="%",
+                       title_font=dict(size=16, color=theme_text),
+                       tickfont=dict(size=14, color=theme_text), ticksuffix="%",
                        zeroline=True),
-            legend=dict(font=dict(size=14))
+            legend=dict(font=dict(size=14, color=theme_text))
         )
         st.plotly_chart(fig, use_container_width=True)
 
@@ -543,17 +549,19 @@ else:
                 hovertemplate="<b>%{x}</b><br>2026: %{y:+.2f}%<extra></extra>"
             ))
             fig.add_hline(y=0, line_dash="dash", line_color="gray")
+            theme_text = st.get_option("theme.textColor") or TEXT_COLOR
             fig.update_layout(
                 title=dict(text=f"Demand Change by Adverse Weather Type ({borough})",
-                           x=0.5, xanchor="center", font=dict(size=20, color=TEXT_COLOR)),
+                           x=0.5, xanchor="center", font=dict(size=20, color=theme_text)),
                 barmode="group", height=450,
                 plot_bgcolor=BG_COLOR, paper_bgcolor=PAPER_COLOR,
-                font=dict(color=TEXT_COLOR, size=14),
+                font=dict(color=theme_text, size=14),
                 margin=dict(l=50, r=50, t=70, b=50),
-                xaxis=dict(title="Adverse Weather Type", title_font=dict(size=16), tickfont=dict(size=14)),
-                yaxis=dict(title="% Change vs. Clear Weather", title_font=dict(size=16),
-                           tickfont=dict(size=14), ticksuffix="%", zeroline=True),
-                legend=dict(font=dict(size=14))
+                xaxis=dict(title="Adverse Weather Type", title_font=dict(size=16, color=theme_text),
+                           tickfont=dict(size=14, color=theme_text)),
+                yaxis=dict(title="% Change vs. Clear Weather", title_font=dict(size=16, color=theme_text),
+                           tickfont=dict(size=14, color=theme_text), ticksuffix="%", zeroline=True),
+                legend=dict(font=dict(size=14, color=theme_text))
             )
             st.plotly_chart(fig, use_container_width=True)
 
@@ -645,17 +653,19 @@ else:
                 hovertemplate="<b>%{x}</b><br>2026: $%{y:+,.0f}/hr<extra></extra>"
             ))
             fig.add_hline(y=0, line_dash="dash", line_color="gray")
+            theme_text = st.get_option("theme.textColor") or TEXT_COLOR
             fig.update_layout(
                 title=dict(text=f"Revenue Impact per Adverse-Weather Hour ({borough})",
-                           x=0.5, xanchor="center", font=dict(size=20, color=TEXT_COLOR)),
+                           x=0.5, xanchor="center", font=dict(size=20, color=theme_text)),
                 barmode="group", height=450,
                 plot_bgcolor=BG_COLOR, paper_bgcolor=PAPER_COLOR,
-                font=dict(color=TEXT_COLOR, size=14),
+                font=dict(color=theme_text, size=14),
                 margin=dict(l=50, r=50, t=70, b=50),
-                xaxis=dict(title="Time Period", title_font=dict(size=16), tickfont=dict(size=14)),
-                yaxis=dict(title="Revenue Difference per Hour ($)", title_font=dict(size=16),
-                           tickfont=dict(size=14), tickprefix="$", zeroline=True),
-                legend=dict(font=dict(size=14))
+                xaxis=dict(title="Time Period", title_font=dict(size=16, color=theme_text),
+                           tickfont=dict(size=14, color=theme_text)),
+                yaxis=dict(title="Revenue Difference per Hour ($)", title_font=dict(size=16, color=theme_text),
+                           tickfont=dict(size=14, color=theme_text), tickprefix="$", zeroline=True),
+                legend=dict(font=dict(size=14, color=theme_text))
             )
             st.plotly_chart(fig, use_container_width=True)
 
