@@ -1,6 +1,6 @@
 # NYC Taxi Trip Data Platform
 
-**Team AMO:** Orlando Marin, Ariana Lopez, Maryam Choudhury
+**Team AMO:** Ariana Lopez, Maryam Choudhury, Orlando Marin
 
 **Program:** TechCatalyst Data Engineering 2026 Capstone
 
@@ -194,9 +194,9 @@ AI assistants were used during this project for:
 
 | Team Member | Primary Contributions |
 | :--- | :--- |
+| Ariana Lopez | BigQuery ML clustering analysis, architecture diagram, Pattern B exploration (AWS Glue + PySpark), permit data investigation |
+| Maryam Choudhury | Tableau dashboard (YoY analysis + clustering visualizations), Pattern B exploration, permit data investigation |
 | Orlando Marin | Pipeline orchestration, dbt models, Streamlit app, presentation |
-| Ariana Lopez | BigQuery ML clustering analysis, pattern exploration |
-| Maryam Choudhury | Tableau dashboard, data exploration |
 
 ## License
 
