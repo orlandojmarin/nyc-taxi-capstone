@@ -338,14 +338,72 @@ However, **revenue per trip remains stable** despite shorter distances ($24/trip
 
 ---
 
+## Revenue Per Active Minute Analysis
+
+### Overview
+
+During presentation preparation, we performed an additional analysis computing **revenue per active minute** by borough and weather condition. This metric divides average fare (excluding tips) by average trip duration, giving a direct measure of how efficiently a driver earns while actively driving, with no assumptions about idle time or utilization.
+
+**Fare definition:** `(TOTAL_REVENUE - TOTAL_TIPS) / TRIP_COUNT`. Tips are excluded because cash tips are not recorded in TLC data (the "cash tip trap"), which would bias any comparison involving payment types. This matches the Streamlit dashboard's fare calculation.
+
+**Data scope:** Both years combined (January through May 2025 and January through May 2026, 38M+ trips, 7,248 weather hours). Combined for larger sample size; patterns hold in each individual year but are more pronounced in 2026.
+
+### Results by Borough and Weather Condition
+
+| Borough | Clear/Normal $/min | Rain $/min | Snow $/min | Rain vs Clear | Snow vs Clear |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Manhattan | $1.52 | $1.53 | $1.64 | +1% | +8% |
+| Brooklyn | $1.14 | $1.26 | $1.41 | +11% | +25% |
+| Queens | $1.73 | $1.70 | $1.91 | -2% | +10% |
+| Bronx | $1.01 | $1.10 | $1.31 | +8% | +29% |
+
+### Trips Per Hour by Borough and Weather
+
+| Borough | Clear/Normal | Rain | Snow | Rain vs Clear | Snow vs Clear |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Manhattan | 4,539 | 5,190 | 3,769 | +14% | -17% |
+| Brooklyn | 188 | 238 | 179 | +27% | -5% |
+| Queens | 475 | 513 | 363 | +8% | -24% |
+| Bronx | 45 | 45 | 37 | +2% | -16% |
+
+### Average Fare by Borough and Weather
+
+| Borough | Clear/Normal | Rain | Snow |
+| :--- | :--- | :--- | :--- |
+| Manhattan | $22.41 | $22.88 | $22.34 |
+| Brooklyn | $32.53 | $32.38 | $34.26 |
+| Queens | $58.44 | $56.80 | $52.86 |
+| Bronx | $34.51 | $33.36 | $34.24 |
+
+### Weather Hour Distribution
+
+| Condition | Hours | % of Total |
+| :--- | :--- | :--- |
+| Clear/Normal (Clear + Cloudy + Drizzle) | 6,846 | 94.5% |
+| Rain | 185 | 2.6% |
+| Snow | 217 | 3.0% |
+
+### Key Findings (basis for presentation recommendations)
+
+1. **Rain + Brooklyn:** The only borough where both demand (+27%) and per-minute earnings (+11%) increase during rain. No other borough shows this combination.
+
+2. **Snow + all boroughs:** Total trip volume drops, but per-minute earnings rise everywhere (+8% to +29%). Trips get shorter but fares stay flat, resulting in faster turnover and higher efficiency for drivers who remain active.
+
+3. **Clear weather + Manhattan vs Queens:** Manhattan offers 4,539 trips/hr (minimal idle time, $1.52/min). Queens offers $1.73/min (+14% premium) driven by longer trips averaging $58 per fare. The tradeoff is trip density (475 vs 4,539 trips/hr).
+
+### Limitation
+
+The data shows completed trips only. We cannot distinguish between reduced rider demand and reduced driver supply during snow. The per-minute earnings increase during snow is consistent with fewer drivers being available (less competition for fares), but we cannot prove this from the dataset alone.
+
+---
+
 ## What's Next
 
-- [ ] Finalize presentation slides with findings from Charts 4-6
+- [x] Finalize presentation slides with findings
 - [ ] Cost and performance rationale document
-- [ ] Future state proposal with effort estimate
-- [ ] README update with reproduction instructions
-- [ ] AI use disclosure
-- [ ] First rehearsal (Friday Aug 14)
+- [x] Future state proposal with effort estimate
+- [x] AI use disclosure
+- [x] First rehearsal (Friday Aug 14)
 
 ---
 
