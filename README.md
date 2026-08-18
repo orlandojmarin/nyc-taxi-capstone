@@ -1,6 +1,6 @@
 # NYC Taxi Trip Data Platform
 
-**Team AMO:** Orlando Marin, Ariana Lopez, Maryam Choudhury
+**Team AMO:** Ariana Lopez, Maryam Choudhury, Orlando Marin
 
 **Program:** TechCatalyst Data Engineering 2026 Capstone
 
