@@ -173,7 +173,7 @@ With additional time and budget, we would:
 
 ## AI Use Disclosure
 
-AI assistants were used during this project for:
+All analytical decisions, architecture choices, and project direction were driven by the team. AI assistants were used as an execution tool in the following areas:
 - Pipeline development and SQL transformations
 - Streamlit visualizations and chart logic
 - Data analysis and revenue calculations
