@@ -27,4 +27,5 @@ Thumbs.db
 *.parquet
 *.csv
 !seeds/*.csv
-!orlando/weather_hourly.csv
+!pipeline/weather_hourly.csv
+!data/*.csv
