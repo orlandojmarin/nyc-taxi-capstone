@@ -196,7 +196,7 @@ AI assistants were used during this project for:
 | :--- | :--- |
 | Ariana Lopez | BigQuery ML clustering analysis, architecture diagram, Pattern B exploration (AWS Glue + PySpark), permit data investigation |
 | Maryam Choudhury | Tableau dashboard (YoY analysis + clustering visualizations), Pattern B exploration, permit data investigation |
-| Orlando Marin | Pipeline orchestration, dbt models, Streamlit app, presentation |
+| Orlando Marin | Pipeline orchestration, dbt models, Streamlit app, documentation (DQ report, pattern_a_steps), repo management |
 
 ## License
 
