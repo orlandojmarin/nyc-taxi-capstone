@@ -16,16 +16,18 @@ Raw Parquet files land from S3 into Snowflake through an idempotent ELT pipeline
 
 ## Analytical Question
 
-> How does adverse weather (rain, snow, high winds) affect taxi demand across NYC boroughs, and how did those patterns shift between 2025 and 2026?
+> How does adverse weather (rain and snow) affect taxi demand across NYC boroughs, and how did those patterns shift between 2025 and 2026?
 
-Supporting analysis includes trip duration, revenue impact, and payment type breakdowns during adverse vs. clear weather conditions.
+Supporting analysis includes time-of-day patterns, revenue per active minute, borough-level demand shifts, and year-over-year comparisons across weather types.
 
 ## Key Findings
 
-- Adverse weather reduces taxi demand across all boroughs, but the magnitude varies by borough and year.
-- Manhattan maintains the highest trip volume under all weather conditions due to density and transit options.
-- Year-over-year demand patterns shifted between 2025 and 2026, with measurable changes in how boroughs respond to weather events.
-- The revenue per trip during adverse weather shows a premium in certain boroughs where supply contracts faster than demand.
+- **Weather changes ride volume, not ride cost.** Average fares stay flat across all weather conditions and boroughs. The business risk is fewer rides, not less expensive ones.
+- **In 2025, adverse weather increased demand. In 2026, it lowered demand.** The difference is driven by snow severity: rain increases ridership in both years, but the heavier snow in 2026 drove an overall demand decline.
+- **The geographic response to weather shifted year over year.** Brooklyn's adverse-weather share grew from +0.2pp in 2025 to +0.9pp in 2026. Manhattan moved from +0.7pp to -0.5pp.
+- **Brooklyn is the only borough where both demand and per-minute earnings rise during rain** (+27% demand, +11% earnings per active minute).
+- **Drivers who stay on the road during snow earn more per active minute in every borough** (+8% in Manhattan to +29% in the Bronx).
+- **Manhattan rush hour saw a $90K/hr revenue swing YoY:** adverse weather added $31K/hr in 2025 but cost $58K/hr in 2026.
 
 ## Architecture
 
@@ -165,21 +167,28 @@ Key decisions:
 
 With additional time and budget, we would:
 
-1. **Add time-lag weather modeling:** Capture the 6+ hours after a snowstorm when roads are still impacted, not just the hour of active precipitation.
-2. **Implement incremental loading:** Process only new monthly files as TLC publishes them.
-3. **Add real-time weather alerting:** Trigger demand forecasts when adverse weather is predicted.
-4. **Expand geographic enrichment:** Add subway station proximity and population density by zone.
-5. **Operationalize the Streamlit app:** Add authentication, scheduled data refreshes, and alerting for data quality regressions.
+1. **Real-time ingestion (highest impact):** Stream trip and weather data continuously via Snowpipe for minute-level demand signals during active storms.
+2. **ML demand forecasting:** Predict demand changes before weather events occur to improve driver positioning and reduce idle time.
+3. **Expanded analysis:** Extend to full-year data for seasonal patterns and incorporate Uber/Lyft data to compare surge pricing behavior during adverse weather.
 
 ## AI Use Disclosure
 
-AI assistants (Claude) were used during this project for:
-- Generating initial SQL boilerplate for COPY INTO and dbt model scaffolding
-- Debugging Snowflake case-sensitivity and timestamp issues
-- Drafting and iterating on the Streamlit visualization code
-- Structuring the data quality report and pattern_a_steps documentation
+AI assistants were used during this project for:
+- Pipeline development and SQL transformations
+- Streamlit visualizations and chart logic
+- Data analysis and revenue calculations
+- Presentation content and speaker notes
 
-All code was reviewed, tested, and understood by team members. Every pipeline step was run and verified independently, and all analytical findings were validated against direct Snowflake queries.
+**How we verified:**
+- Ran full pipeline end-to-end and reconciled row counts against source files
+- Cross-checked all calculations against raw data and Tableau results
+- Reviewed and revised all generated content before committing
+- Every number on every slide traces back to a verifiable query
+
+**What we corrected:**
+- Fare calculations initially included tips, inflating averages. Caught and corrected.
+- Hourly earnings used an unverifiable utilization assumption. Replaced with revenue per active minute.
+- Initial summary slide was descriptive. Reworked to be prescriptive with data-backed actions.
 
 ## Contributors
 
